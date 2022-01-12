@@ -22,8 +22,8 @@ my_id = 3
 or_id = 0
 i = 1
 IS_TRAINING = False
-MAX_MIN_TRAINING = None
-MEAN_MEDIAN_TRAINING = None
+MAX_MIN_TRAINING = dict()
+MEAN_MEDIAN_TRAINING = dict()
 MOST_FR = dict()
 
 def minMax(x):
@@ -291,8 +291,7 @@ def features_to_keep(data):
                            'sugar_levels', 'sport_activity',  'PCR_01', 'PCR_02', 'PCR_03',
                           'PCR_04', 'PCR_05', 'PCR_06','PCR_07', 'PCR_08','PCR_09', 'PCR_10', 'blood_type_AB-', 'blood_type_B+',
                            'blood_type_B-','blood_type_O+', 'blood_type_O-','cough',
-                           'fever','shortness_of_breath', 'covid', 'risk',
-                            'spread'
+                           'fever','shortness_of_breath', 'VirusScore'
                            ]
 
     data = data[remaining_features]
@@ -381,7 +380,6 @@ def normalize_data(data:pd.DataFrame):
     data =normalize(df=data, row='num_of_siblings', process=preprocessing.StandardScaler())
     data =normalize(df=data, row='conversations_per_day', process=preprocessing.MinMaxScaler())
     data =normalize(df=data, row='household_income', process=preprocessing.MinMaxScaler())
-    # data = normalize(df=data, row='household_income', process=preprocessing.StandardScaler())
     data =normalize(df=data, row='sugar_levels', process=preprocessing.StandardScaler())
     data =normalize(df=data, row='sport_activity', process=preprocessing.MinMaxScaler())
 
@@ -408,7 +406,7 @@ def _prepare_data(data: pd.DataFrame, is_training = False):
     # data = data.copy()
     # Q6 change the blood_type facture to OHE
     # data = questions_module.Q6(data=data)
-    training_data = split_blood_type(data=data)
+    data = split_blood_type(data=data)
 
     # Q7 change the symptoms facture to OHE
     # data = questions_module.Q7(data=data,save_csv=False)
@@ -436,13 +434,10 @@ def _prepare_data(data: pd.DataFrame, is_training = False):
 
 
 
-def prepare_data( data : pd.Dataframe ):
+def prepare_data( data : pd.DataFrame ):
     train_data, test_data = split_dataset(data)
-    train_data = _prepare_data(train_data)
     train = _prepare_data(data=train_data, is_training=True)
     test = _prepare_data(data=test_data, is_training=False)
-
-
     return train , test
 
 if __name__ == '__main__':
