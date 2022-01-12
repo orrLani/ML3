@@ -290,7 +290,7 @@ def features_to_keep(data):
     remaining_features = [ 'age', 'sex', 'num_of_siblings', 'pcr_date', 'conversations_per_day','household_income',
                            'sugar_levels', 'sport_activity',  'PCR_01', 'PCR_02', 'PCR_03',
                           'PCR_04', 'PCR_05', 'PCR_06','PCR_07', 'PCR_08','PCR_09', 'PCR_10', 'blood_type_AB-', 'blood_type_B+',
-                           'blood_type_B-','blood_type_O+', 'blood_type_O-','cough',
+                           'blood_type_B-','blood_type_O+', 'blood_type_O-','cough','blood_type_A+','blood_type_A-',
                            'fever','shortness_of_breath', 'VirusScore'
                            ]
 
@@ -347,11 +347,11 @@ def make_matshow(data):
 
 
 #######################################
-def normalize(df,row,process):
-    temp = df[row].values.reshape(-1, 1)
-    df[row] = process.fit_transform(temp)
-
-    return df
+def normalize(trainset,testset,row,process):
+    temp = trainset[row].values.reshape(-1, 1)
+    trainset[row] = process.fit_transform(temp)
+    testset[row] = process.transform(testset[row].values.reshape(-1,1))
+    return trainset,testset
 
 def convertToNumber(s):
     return int.from_bytes(str(s).encode(), 'little')
@@ -364,36 +364,35 @@ def create_number_convention(df):
     df['sex'] = df['sex'].map(dict(F=-1,M=1))
     # targets
     # covid
-    df['covid'] = df['covid'].apply(convertToBinary)
-    # risk
-    df['risk'] = df['risk'].map(dict(Low=-1, High=1))
-    # spread
-    df['spread'] = df['spread'].map(dict(Low=-1, High=1))
+    # df['covid'] = df['covid'].apply(convertToBinary)
+    # # risk
+    # df['risk'] = df['risk'].map(dict(Low=-1, High=1))
+    # # spread
+    # df['spread'] = df['spread'].map(dict(Low=-1, High=1))
 
     # drop date
-    df = df.drop(['pcr_date','postcode','home_country','country'], axis=1)
     return df
 
 
-def normalize_data(data:pd.DataFrame):
-    data = normalize(df=data, row='age', process=preprocessing.MinMaxScaler())
-    data =normalize(df=data, row='num_of_siblings', process=preprocessing.StandardScaler())
-    data =normalize(df=data, row='conversations_per_day', process=preprocessing.MinMaxScaler())
-    data =normalize(df=data, row='household_income', process=preprocessing.MinMaxScaler())
-    data =normalize(df=data, row='sugar_levels', process=preprocessing.StandardScaler())
-    data =normalize(df=data, row='sport_activity', process=preprocessing.MinMaxScaler())
+def normalize_data(train:pd.DataFrame,test : pd.DataFrame):
+    train,test = normalize(trainset=train,testset=test, row='age', process=preprocessing.MinMaxScaler())
+    train,test =normalize(trainset=train,testset=test, row='num_of_siblings', process=preprocessing.StandardScaler())
+    train,test =normalize(trainset=train,testset=test, row='conversations_per_day', process=preprocessing.MinMaxScaler())
+    train,test =normalize(trainset=train,testset=test, row='household_income', process=preprocessing.MinMaxScaler())
+    train,test =normalize(trainset=train,testset=test, row='sugar_levels', process=preprocessing.StandardScaler())
+    train,test =normalize(trainset=train,testset=test, row='sport_activity', process=preprocessing.MinMaxScaler())
 
-    data = normalize(df=data, row='PCR_01', process=preprocessing.StandardScaler())
-    data = normalize(df=data, row='PCR_02', process=preprocessing.StandardScaler())
-    data = normalize(df=data, row='PCR_03', process=preprocessing.StandardScaler())
-    data = normalize(df=data, row='PCR_04', process=preprocessing.MinMaxScaler())
-    data = normalize(df=data, row='PCR_06', process=preprocessing.StandardScaler())
-    data = normalize(df=data, row='PCR_07', process=preprocessing.StandardScaler())
-    data = normalize(df=data,row='PCR_08',process=preprocessing.MinMaxScaler())
-    data = normalize(df=data,row='PCR_09',process=preprocessing.MinMaxScaler())
-    data = normalize(df=data,row= 'PCR_10',process=preprocessing.StandardScaler())
+    train,test = normalize(trainset=train,testset=test, row='PCR_01', process=preprocessing.StandardScaler())
+    train,test = normalize(trainset=train,testset=test, row='PCR_02', process=preprocessing.StandardScaler())
+    train,test = normalize(trainset=train,testset=test, row='PCR_03', process=preprocessing.StandardScaler())
+    train,test = normalize(trainset=train,testset=test, row='PCR_04', process=preprocessing.MinMaxScaler())
+    train,test = normalize(trainset=train,testset=test, row='PCR_06', process=preprocessing.StandardScaler())
+    train,test = normalize(trainset=train,testset=test, row='PCR_07', process=preprocessing.StandardScaler())
+    train,test = normalize(trainset=train,testset=test, row='PCR_08',process=preprocessing.MinMaxScaler())
+    train,test = normalize(trainset=train,testset=test, row='PCR_09',process=preprocessing.MinMaxScaler())
+    train,test = normalize(trainset=train,testset=test, row= 'PCR_10',process=preprocessing.StandardScaler())
 
-    return data
+    return train,test
 
 
 
@@ -422,7 +421,7 @@ def _prepare_data(data: pd.DataFrame, is_training = False):
     data = features_to_keep(data=data)
     # data = questions_module.Q23(data=data,save_csv=False,name_csv ='data_clean')
 
-    data = normalize_data(data=data)
+    # data = normalize_data(data=data)
     # normalize the data
 
     return data
@@ -435,14 +434,20 @@ def _prepare_data(data: pd.DataFrame, is_training = False):
 
 
 def prepare_data( data : pd.DataFrame ):
+    data = create_number_convention(data)
+    # data = pd.read_csv("training.csv")
+
     train_data, test_data = split_dataset(data)
     train = _prepare_data(data=train_data, is_training=True)
     test = _prepare_data(data=test_data, is_training=False)
+    train,test = normalize_data(train,test)
+    train = remove_unwanted_features(train)
+    test = remove_unwanted_features(test)
+    pd.DataFrame(train).to_csv("train_prepared.csv",index=False)
+    pd.DataFrame(test).to_csv("test_prepared.csv",index=False)
+
     return train , test
 
 if __name__ == '__main__':
-    data = pd.read_csv("virus_labeled.csv")
-    # data = pd.read_csv("training.csv")
-    train_data, test_data = prepare_data(data)
-    pd.DataFrame(train_data).to_csv("train_prepared.csv")
-    pd.DataFrame(test_data).to_csv("test_prepared.csv")
+    data = pd.read_csv("virus_labeled.csv",index_col = False)
+    prepare_data(data)
