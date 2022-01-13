@@ -62,6 +62,14 @@ import numpy as np
         # TODO: calculate the analytical gradient w.r.t w and b
         g_w = None
         g_b = 0.0
+        margins = (X.dot(w) + b).reshape(-1, 1)
+        hinge_inputs = np.multiply(margins, y.reshape(-1, 1))
+        m = len(y)
+        one_vec = np.ones(m)
+        inner = np.multiply(X,w)+np.multiply(one_vec,b)-y
+        g_w = 2/m*inner.dot(X)
+        b_inner = np.multiply(X,w)+np.multiply(one_vec,b)-y
+        g_b = 2/m* np.multiply(one_vec.reshape(-1,1),b_inner)
 
         return g_w, g_b
 
@@ -97,11 +105,12 @@ import numpy as np
 
             # TODO: Compute the gradient for the current *batch*
             g_w, g_b = None, None
+            g_w, g_b = gradient(w,b,batch_X,batch_y)
 
             # Perform a gradient step
             # TODO: update the learned parameters correctly
-            self.w = None
-            self.b = 0.0
+            self.w = self.w - self.lr*g_w
+            self.b = self.b - g_b*self.lr
 
             if keep_losses:
                 train_losses.append(self.loss(self.w, self.b,  X, y))
@@ -132,5 +141,7 @@ import numpy as np
 
         # TODO: Compute
         y_pred = None
+
+        
 
         return y_pred
