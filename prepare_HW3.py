@@ -151,62 +151,6 @@ def get_all_hist(data):
         get_histograms(data,att)
 
 
-# to remove? addition of new features
-# def Q8(data, save_csv=False, name_csv=''):
-#     new_data = pd.DataFrame()
-#     is_army = []
-#     country_residence = []
-#     process = 0
-#     for i in data.index:
-#         print(f' finish {100 * process / len(data.index)}%')
-#         process += 1
-#         if data['address'][i] is not np.nan:
-#             val = data['address'][i]
-#             if "Unit" in str(val) or "USNS" in str(val) or "USNV" in str(val):
-#                 is_army.append(True)
-#             else:
-#                 is_army.append(False)
-#             if "," in str(val):
-#                 tmp = str(val).split(',')[1]
-#                 tmp = tmp.strip().split(' ')[0]
-#                 country_residence.append(tmp)
-#             else:
-#                 country_residence.append(np.nan)
-#         else:
-#             is_army.append(np.nan)
-#             country_residence.append(np.nan)
-#
-#         if data['current_location'][i] is not np.nan:
-#             info_dict = Q8_transform_coordinates(data['current_location'][i])
-#             info_dict = info_dict.raw['address']
-#             relvent_dict = dict()
-#             if 'country' in info_dict.keys():
-#                 relvent_dict['country'] = info_dict['country']
-#             else:
-#                 relvent_dict['country'] = np.nan
-#             if 'county' in info_dict.keys():
-#                 relvent_dict['county'] = info_dict['county']
-#             else:
-#                 relvent_dict['county'] = np.nan
-#             if 'postcode' in info_dict.keys():
-#                 relvent_dict['postcode'] = info_dict['postcode']
-#             else:
-#                 relvent_dict['postcode'] = np.nan
-#             new_data = new_data.append(relvent_dict, ignore_index=True)
-#         else:
-#                 new_data = new_data.append(pd.Series(), ignore_index=True)
-#     new_data['is_army'] = is_army
-#     new_data['home_country'] = country_residence
-#     # new_data = turn_binary(new_data)
-#     # save data to csv
-#     if save_csv:
-#         new_data.to_csv(f'{name_csv}_new_features_to_add.csv')
-#     else:
-#         new_data = Q8_merge_data(data_first=data, data_second=new_data)
-#
-#     return new_data
-
-
 
 
 def clear_outliers(data, is_training):
@@ -304,7 +248,7 @@ def impute_features(data,is_training):
 
 
 def features_to_keep(data):
-    remaining_features = [ 'age', 'sex', 'num_of_siblings', 'pcr_date', 'conversations_per_day','household_income',
+    remaining_features = [ 'age', 'sex', 'num_of_siblings','conversations_per_day','household_income',
                            'sugar_levels', 'sport_activity',  'PCR_01', 'PCR_02', 'PCR_03',
                           'PCR_04', 'PCR_05', 'PCR_06','PCR_07', 'PCR_08','PCR_09', 'PCR_10', 'blood_type',
                            'blood_type_AB-', 'blood_type_B+',
@@ -332,36 +276,6 @@ def remove_unwanted_features(data):
     for i in toRemove:
         data.drop(i, axis=1, inplace=True)
     return data
-
-def make_matshow(data):
-    f = plt.figure()
-    plt.matshow(data.corr(), fignum=f.number)
-
-    show = ['age', 'sex', 'weight', 'num_of_siblings', 'happiness_score', 'household_income',
-            'conversations_per_day',
-            'sugar_levels', 'sport_activity', 'PCR_01', 'PCR_02', 'PCR_03', 'PCR_04', 'PCR_05',
-            'PCR_06', 'PCR_07', 'PCR_08', 'PCR_09', 'PCR_10', 'risk', 'spread', 'covid',
-            'blood_type_A+', 'blood_type_A-', 'blood_type_AB+', 'blood_type_AB-',
-            'blood_type_B+', 'blood_type_B-', 'blood_type_O+', 'blood_type_O-',
-            'cough', 'fever', 'headache']
-    plt.xticks(range(len(show)), show, fontsize=5,rotation=90)
-    plt.yticks(range(len(show)), show, fontsize=5)
-    cb = plt.colorbar()
-    cb.ax.tick_params(labelsize=3)
-    _ = plt.title('Correlation Matrix', fontsize=5)
-    plt.show()
-
-
-# def prepare_data(data,training_data):
-#     data_copy = data.copy()
-#     train_copy = training_data.copy()
-#     train_copy = split_blood_type(train_copy)
-#     data_copy = split_blood_type(data_copy)
-#     train_copy = split_symptoms(train_copy)
-#     data_copy = split_symptoms(data_copy)
-#
-
-
 
 
 #######################################
@@ -485,5 +399,6 @@ import seaborn as sns
 if __name__ == '__main__':
     data = pd.read_csv("virus_labeled.csv",index_col = False)
     train, test = prepare_data(data=data)
+    pass
     # train = Q1(train_data=train)
     # Q1(train_data=train)
