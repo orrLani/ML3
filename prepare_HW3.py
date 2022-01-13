@@ -106,7 +106,7 @@ def get_histograms(data,feature):
 
 
 def split_dataset(data):
-    train,test = train_test_split(data, train_size=0.8, random_state=my_id + or_id)
+    train, test = train_test_split(data, train_size=0.8, random_state=my_id + or_id)
     train.to_csv("train.csv")
     test.to_csv("test.csv")
     return (train , test)
@@ -115,11 +115,11 @@ def split_dataset(data):
 # splits blood type to OHE vector
 def split_blood_type(train_data,test_data):
     train, test = imute_blood_type(train=train_data,test=test_data)
-    train_temp = data['blood_type']
+    train_temp = train['blood_type']
     train = pd.get_dummies(data=train, columns=['blood_type'])
     train['blood_type'] = train_temp
 
-    test_temp = data['blood_type']
+    test_temp = test['blood_type']
     test = pd.get_dummies(data=test, columns=['blood_type'])
     test['blood_type'] = test_temp
     # train.to_csv("train.csv")
