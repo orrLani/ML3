@@ -40,6 +40,7 @@ def turn_binary(data):
     data['spread'] = data['spread'].replace(['High', 'Low'],[1, 0])
     return data
 
+
 def NoneFill(data,col):
     val = data[col].mean()
     data[col].fillna(value=val,inplace=True)
@@ -51,8 +52,6 @@ def percent25(df):
 
 def percent75(df):
     return df.quantile(0.75)
-
-
 
 
 #
@@ -112,12 +111,19 @@ def split_dataset(data):
     test.to_csv("test.csv")
     return (train , test)
 
+
 # splits blood type to OHE vector
-def split_blood_type(data):
-    data =pd.get_dummies(data=data, columns=['blood_type'])
+def split_blood_type(train_data,test_data):
+    train, test = imute_blood_type(train=train_data,test=test_data)
+    train_temp = data['blood_type']
+    train = pd.get_dummies(data=train, columns=['blood_type'])
+    train['blood_type'] = train_temp
+
+    test_temp = data['blood_type']
+    test = pd.get_dummies(data=test, columns=['blood_type'])
+    test['blood_type'] = test_temp
     # train.to_csv("train.csv")
-    return data
-    # print(x)
+    return train, test
 
 # splits symptoms into different features and returns the updated
 # dataframe
@@ -233,6 +239,15 @@ def clear_outliers(data, is_training):
 # random sample
 # constant value (arbitrary value)
 # most frequent
+
+def imute_blood_type(train , test : pd.DataFrame):
+    imputer = RandomSampleImputer(random_state=my_id + or_id)
+    train['blood_type'] = imputer.fit_transform(train[['blood_type']])
+    test['blood_type'] = imputer.transform(test[['blood_type']])
+
+    return train, test
+
+
 def impute_simpleimputer(data,feature, impute_method):
     imputer = SimpleImputer(missing_values=np.nan, strategy=impute_method)
     data[feature] = imputer.fit_transform(data[[feature]])
@@ -289,7 +304,8 @@ def impute_features(data,is_training):
 def features_to_keep(data):
     remaining_features = [ 'age', 'sex', 'num_of_siblings', 'pcr_date', 'conversations_per_day','household_income',
                            'sugar_levels', 'sport_activity',  'PCR_01', 'PCR_02', 'PCR_03',
-                          'PCR_04', 'PCR_05', 'PCR_06','PCR_07', 'PCR_08','PCR_09', 'PCR_10', 'blood_type_AB-', 'blood_type_B+',
+                          'PCR_04', 'PCR_05', 'PCR_06','PCR_07', 'PCR_08','PCR_09', 'PCR_10', 'blood_type',
+                           'blood_type_AB-', 'blood_type_B+',
                            'blood_type_B-','blood_type_O+', 'blood_type_O-','cough','blood_type_A+','blood_type_A-',
                            'fever','shortness_of_breath', 'VirusScore'
                            ]
@@ -396,7 +412,7 @@ def normalize_data(train:pd.DataFrame,test : pd.DataFrame):
 
 
 
-def _prepare_data(data: pd.DataFrame, is_training = False):
+def _prepare_data(train_data: pd.DataFrame,test_data:pd.DataFrame):
     """
     :param data:
     :param training_data:
@@ -405,26 +421,33 @@ def _prepare_data(data: pd.DataFrame, is_training = False):
     # data = data.copy()
     # Q6 change the blood_type facture to OHE
     # data = questions_module.Q6(data=data)
-    data = split_blood_type(data=data)
+    train_data, test_data = split_blood_type(train_data=train_data,test_data=test_data)
 
     # Q7 change the symptoms facture to OHE
     # data = questions_module.Q7(data=data,save_csv=False)
-    data = split_symptoms(data=data)
+    train_data = split_symptoms(data=train_data)
+    test_data = split_symptoms(data=test_data)
 
 
-    data = clear_outliers(data=data, is_training=is_training)
+    train_data = clear_outliers(data=train_data, is_training=True)
+    test_data = clear_outliers(data=test_data, is_training=False)
+
     # TODO FIX BY THE TRAINING DATA
     # data = questions_module.Q11(data=data, plot=False, is_training=False)
     # Q17 missing values
-    data = impute_features(data=data,is_training=is_training)
+
+    train_data = impute_features(data=train_data,is_training=True)
+    test_data = impute_features(data=test_data, is_training=False)
+
     # Q23 clean feactures
-    data = features_to_keep(data=data)
+    train_data = features_to_keep(data=train_data)
+    test_data = features_to_keep(data=test_data)
     # data = questions_module.Q23(data=data,save_csv=False,name_csv ='data_clean')
 
     # data = normalize_data(data=data)
     # normalize the data
 
-    return data
+    return train_data,test_data
 
 
 
@@ -438,16 +461,33 @@ def prepare_data( data : pd.DataFrame ):
     # data = pd.read_csv("training.csv")
 
     train_data, test_data = split_dataset(data)
-    train = _prepare_data(data=train_data, is_training=True)
-    test = _prepare_data(data=test_data, is_training=False)
+    train,test = _prepare_data(train_data=train_data,test_data=test_data)
     train,test = normalize_data(train,test)
-    train = remove_unwanted_features(train)
-    test = remove_unwanted_features(test)
+    # train = remove_unwanted_features(train)
+    # test = remove_unwanted_features(test)
     pd.DataFrame(train).to_csv("train_prepared.csv",index=False)
     pd.DataFrame(test).to_csv("test_prepared.csv",index=False)
 
     return train , test
 
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+def Q1(train_data):
+    x_train = train_data.drop(columns=['VirusScore'])
+    y_train = train_data['VirusScore']
+    fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(18, 5))
+    for i, cur_type in enumerate(['-', 'A', 'B']):
+         filter_mask = x_train['blood_type'].str.contains(cur_type)
+         sns.histplot(data=y_train[~filter_mask], ax=ax[i], stat="density", kde=True,
+         line_kws={"linewidth": 3}, color="orange", label="not '{}'".format(cur_type))
+         sns.histplot(data=y_train[filter_mask], ax=ax[i], stat="density", kde=True,
+         line_kws={"linewidth": 3}, label=cur_type)
+         ax[i].set_title("Blood type contains " + cur_type)
+         ax[i].legend(), ax[i].grid(alpha=0.5)
+    plt.show()
 if __name__ == '__main__':
     data = pd.read_csv("virus_labeled.csv",index_col = False)
-    prepare_data(data)
+    train, test = prepare_data(data=data)
+    train = Q1(train_data=train)
+    # Q1(train_data=train)
