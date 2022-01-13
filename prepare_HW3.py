@@ -242,10 +242,12 @@ def clear_outliers(data, is_training):
 
 def imute_blood_type(train , test : pd.DataFrame):
     imputer = RandomSampleImputer(random_state=my_id + or_id)
-    train['blood_type'] = imputer.fit_transform(train[['blood_type']])
-    test['blood_type'] = imputer.transform(test[['blood_type']])
+    new_train = train.copy()
+    new_test = test.copy()
+    new_train['blood_type'] = imputer.fit_transform(train[['blood_type']])
+    new_test['blood_type'] = imputer.transform(test[['blood_type']])
 
-    return train, test
+    return new_train, new_test
 
 
 def impute_simpleimputer(data,feature, impute_method):
@@ -473,21 +475,9 @@ def prepare_data( data : pd.DataFrame ):
 
 import matplotlib.pyplot as plt
 import seaborn as sns
-def Q1(train_data):
-    x_train = train_data.drop(columns=['VirusScore'])
-    y_train = train_data['VirusScore']
-    fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(18, 5))
-    for i, cur_type in enumerate(['-', 'A', 'B']):
-         filter_mask = x_train['blood_type'].str.contains(cur_type)
-         sns.histplot(data=y_train[~filter_mask], ax=ax[i], stat="density", kde=True,
-         line_kws={"linewidth": 3}, color="orange", label="not '{}'".format(cur_type))
-         sns.histplot(data=y_train[filter_mask], ax=ax[i], stat="density", kde=True,
-         line_kws={"linewidth": 3}, label=cur_type)
-         ax[i].set_title("Blood type contains " + cur_type)
-         ax[i].legend(), ax[i].grid(alpha=0.5)
-    plt.show()
+
 if __name__ == '__main__':
     data = pd.read_csv("virus_labeled.csv",index_col = False)
     train, test = prepare_data(data=data)
-    train = Q1(train_data=train)
+    # train = Q1(train_data=train)
     # Q1(train_data=train)
