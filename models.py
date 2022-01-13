@@ -246,6 +246,7 @@ def test_lr(X_train, y_train, X_val, y_val, max_iter=1500):
         axs[i].set_ylabel('MSE')
 
 
+
 if __name__ == '__main__':
    # read the data set
     df = pd.read_csv('virus_labeled.csv')
