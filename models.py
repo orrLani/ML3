@@ -52,7 +52,7 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
         loss = None
         m = X.shape[0]
         one_vec = np.ones(m)
-        res = (1/m)*np.pow(np.linalg.norm(np.mul(X,w)+one_vec*b-y),2)
+        res = (1/m)*np.power(np.linalg.norm(X.dot(w)+one_vec*b-y),2)
 
         return res
 
@@ -72,10 +72,11 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
         g_b = 0.0
         m = X.shape[0]
         one_vec = np.ones(m)
-        inner = np.multiply(X,w)+np.multiply(one_vec,b)-y
+        # inner = np.multiply(X,w) + np.multiply(one_vec,b) - y
+        inner = X.dot(w) + np.multiply(one_vec,b) - y
         g_w = 2/m*inner.dot(X)
-        b_inner = np.multiply(X,w)+np.multiply(one_vec,b)-y
-        g_b = 2/m* np.multiply(one_vec.reshape(-1,1),b_inner)
+        b_inner = X.dot(w)+np.multiply(one_vec,b)-y
+        g_b = 2/m* b_inner.dot(one_vec)
 
         return g_w, g_b
 
@@ -219,18 +220,50 @@ def compare_gradients(X, y, deltas, C=1, REPEATS=10, figsize=(10, 6)):
     plt.show()
 
 
+def test_lr(X_train, y_train, X_val, y_val, max_iter=1500):
+    lr_list = np.logspace(-9, -1, 9)
+
+    fig, axs = plt.subplots(3, 3, sharey=True, figsize=(20, 12))
+    plt.tight_layout()
+    fig.subplots_adjust(hspace=0.5)
+
+    axs = np.ravel(axs)
+    for i, lr in enumerate(lr_list):
+        cur_linear_reggressor = LinearRegressor(lr)
+        train_losses, val_losses = cur_linear_reggressor.fit_with_logs(X_train, y_train, keep_losses=True, X_val=X_val,
+                                                                       y_val=y_val, max_iter=max_iter)
+        print('lr size = ' + str(lr) + ', Best train loss = ' + str(
+            min(train_losses)) + ', Best validation loss = ' + str(min(val_losses)))
+
+        iterations = np.arange(max_iter + 1)
+        axs[i].semilogy(iterations, train_losses, label="Train")
+        axs[i].semilogy(iterations, val_losses, label="Validation")
+        axs[i].grid(alpha=0.5)
+        axs[i].legend()
+        axs[i].set_title('lr = ' + str(lr))
+        axs[i].set_xlabel('iteration')
+        axs[i].set_ylabel('MSE')
+
 
 if __name__ == '__main__':
     # read the data set
     df = pd.read_csv('virus_labeled.csv')
     train, test = prepare_HW3.prepare_data(df)
-
+    train['new_fecutre'] = np.where((train['blood_type_A-'] == 1) | (train['blood_type_A+'] == 1), 1,0)
+    train.drop(columns=['blood_type_A-', 'blood_type_A+', 'blood_type_B-', 'blood_type_B+'
+                   , 'blood_type_AB-', 'blood_type_O-','blood_type_O+'],inplace = True)
+    train.pop('blood_type')
     train_subset , train_subset_test = train_test_split(train,train_size=0.8 , random_state= my_id+or_id)
     X_train = train_subset.copy()
     X_train.pop('VirusScore')
     y_train = train_subset['VirusScore'].values
-    X_train = X_train.values
-    compare_gradients(X_train, y_train, deltas=np.logspace(-7, -2, 9))
+    X_train = X_train
+    X_val = train_subset_test.copy()
+    X_val.pop('VirusScore')
+    X_val = X_val.values
+    y_val = train_subset_test['VirusScore'].values
+    compare_gradients(X_train.values, y_train, deltas=np.logspace(-7, -2, 9))
+    test_lr(X_train.values,y_train,X_val,y_val)
 
     #
 
