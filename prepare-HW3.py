@@ -430,9 +430,12 @@ def _prepare_data(data: pd.DataFrame, is_training = False):
 
 
 
+def imute_blood_type(train : pd.DataFrame, test : pd.DataFrame):
+    imputer = RandomSampleImputer(random_state=my_id + or_id)
+    train['blood_type'] = imputer.fit_transform(data[['blood_type']])
+    test['blood_type'] = imputer.transform(test['blood_type'])
 
-
-
+    return train, test
 def prepare_data( data : pd.DataFrame ):
     data = create_number_convention(data)
     # data = pd.read_csv("training.csv")

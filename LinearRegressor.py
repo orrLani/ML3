@@ -42,8 +42,11 @@ import numpy as np
 
         # TODO: complete the loss calculation
         loss = None
+        m = len(y)
+        one_vec = np.ones(m)
+        res = (1/m)*np.pow(np.linalg.norm(np.mul(X,w)+one_vec*b-y),2)
 
-        return loss
+        return res
 
     @staticmethod
     def gradient(w, b: float, X, y):

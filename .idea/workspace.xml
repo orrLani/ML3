@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="71cb161e-1084-48b7-870c-f3b1db3a3c7b" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LinearRegressor.py" beforeDir="false" afterPath="$PROJECT_DIR$/LinearRegressor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/prepare-HW3.py" beforeDir="false" afterPath="$PROJECT_DIR$/prepare-HW3.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -62,7 +64,8 @@
       <option name="presentableId" value="Default" />
       <updated>1641991304194</updated>
       <workItem from="1641991305837" duration="4308000" />
-      <workItem from="1642005790857" duration="3417000" />
+      <workItem from="1642005790857" duration="7323000" />
+      <workItem from="1642059208636" duration="1446000" />
     </task>
     <servers />
   </component>
@@ -120,12 +123,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/prepare-HW3.py</url>
-          <line>443</line>
+          <line>446</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/prepare-HW3.py</url>
-          <line>445</line>
+          <line>448</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -135,7 +138,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/prepare-HW3.py</url>
-          <line>452</line>
+          <line>455</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
       </breakpoints>
