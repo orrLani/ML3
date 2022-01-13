@@ -139,9 +139,11 @@ import numpy as np
         :return: Predicted continuous labels for samples in X; array of shape (n_samples,)
         """
 
-        # TODO: Compute
-        y_pred = None
 
-        
+        one_vec = np.ones(np.transpose(X.shape[0]))
+        # TODO: Compute
+        y_pred = np.sum(X.dot(np.transpose(self.w)),np.multiply(one_vec,self.b))
+
+
 
         return y_pred
