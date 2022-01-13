@@ -54,6 +54,7 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
         one_vec = np.ones(m)
         res = (1/m)*np.power(np.linalg.norm(X.dot(w)+one_vec*b-y),2)
 
+
         return res
 
     @staticmethod
@@ -246,7 +247,7 @@ def test_lr(X_train, y_train, X_val, y_val, max_iter=1500):
 
 
 if __name__ == '__main__':
-    # read the data set
+   # read the data set
     df = pd.read_csv('virus_labeled.csv')
     train, test = prepare_HW3.prepare_data(df)
     train['new_fecutre'] = np.where((train['blood_type_A-'] == 1) | (train['blood_type_A+'] == 1), 1,0)
@@ -264,7 +265,5 @@ if __name__ == '__main__':
     y_val = train_subset_test['VirusScore'].values
     compare_gradients(X_train.values, y_train, deltas=np.logspace(-7, -2, 9))
     test_lr(X_train.values,y_train,X_val,y_val)
-
-    #
 
 
