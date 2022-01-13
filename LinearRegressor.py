@@ -41,16 +41,12 @@ import numpy as np
         """
 
         # TODO: complete the loss calculation
-        # loss = None
         loss = None
         m = len(y)
         one_vec = np.ones(m)
-        loss = (1 / m) * np.pow(np.linalg.norm(np.mul(X, w) + one_vec * b - y), 2)
+        res = (1/m)*np.pow(np.linalg.norm(np.mul(X,w)+one_vec*b-y),2)
 
-        # return loss
-        # return res
-
-        return loss
+        return res
 
     @staticmethod
     def gradient(w, b: float, X, y):
@@ -66,11 +62,15 @@ import numpy as np
         # TODO: calculate the analytical gradient w.r.t w and b
         g_w = None
         g_b = 0.0
-
+        margins = (X.dot(w) + b).reshape(-1, 1)
+        hinge_inputs = np.multiply(margins, y.reshape(-1, 1))
         m = len(y)
         one_vec = np.ones(m)
-        g_w = 2 * np.transpose(X) * ((X.dot(w)) + (one_vec*b) - y)
-        g_b = (2/m) * np.transpose(one_vec) * (X*np.transpose(w) + one_vec*b -y)
+        inner = np.multiply(X,w)+np.multiply(one_vec,b)-y
+        g_w = 2/m*inner.dot(X)
+        b_inner = np.multiply(X,w)+np.multiply(one_vec,b)-y
+        g_b = 2/m* np.multiply(one_vec.reshape(-1,1),b_inner)
+
         return g_w, g_b
 
     def fit_with_logs(self, X, y, max_iter: int = 1000, keep_losses: bool = True,
@@ -104,14 +104,12 @@ import numpy as np
             batch_y = y[start_idx: end_idx]
 
             # TODO: Compute the gradient for the current *batch*
-            g_w = None
-            g_b = None
-            # self.subgradient(self.w, self.b, self.C, batch_X, batch_y)
-
+            g_w, g_b = None, None
+            g_w, g_b = gradient(w,b,batch_X,batch_y)
 
             # Perform a gradient step
             # TODO: update the learned parameters correctly
-            self.w = self.w - g_w*self.lr
+            self.w = self.w - self.lr*g_w
             self.b = self.b - g_b*self.lr
 
             if keep_losses:
@@ -142,6 +140,9 @@ import numpy as np
         """
 
         # TODO: Compute
-        y_pred = None
+	one_vec = np.ones(np.transpose(X.shape[0]))
+        y_pred = np.sum(X.dot(np.transpose(self.w)),np.multiply(one_vec,self.b))
+
+
 
         return y_pred
