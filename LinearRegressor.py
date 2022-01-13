@@ -41,7 +41,14 @@ import numpy as np
         """
 
         # TODO: complete the loss calculation
+        # loss = None
         loss = None
+        m = len(y)
+        one_vec = np.ones(m)
+        loss = (1 / m) * np.pow(np.linalg.norm(np.mul(X, w) + one_vec * b - y), 2)
+
+        # return loss
+        # return res
 
         return loss
 
@@ -60,6 +67,10 @@ import numpy as np
         g_w = None
         g_b = 0.0
 
+        m = len(y)
+        one_vec = np.ones(m)
+        g_w = 2 * np.transpose(X) * ((X.dot(w)) + (one_vec*b) - y)
+        g_b = (2/m) * np.transpose(one_vec) * (X*np.transpose(w) + one_vec*b -y)
         return g_w, g_b
 
     def fit_with_logs(self, X, y, max_iter: int = 1000, keep_losses: bool = True,
@@ -93,12 +104,15 @@ import numpy as np
             batch_y = y[start_idx: end_idx]
 
             # TODO: Compute the gradient for the current *batch*
-            g_w, g_b = None, None
+            g_w = None
+            g_b = None
+            # self.subgradient(self.w, self.b, self.C, batch_X, batch_y)
+
 
             # Perform a gradient step
             # TODO: update the learned parameters correctly
-            self.w = None
-            self.b = 0.0
+            self.w = self.w - g_w*self.lr
+            self.b = self.b - g_b*self.lr
 
             if keep_losses:
                 train_losses.append(self.loss(self.w, self.b,  X, y))
