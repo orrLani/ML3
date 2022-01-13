@@ -52,7 +52,8 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
         loss = None
         m = X.shape[0]
         one_vec = np.ones(m)
-        res = (1/m)*np.pow(np.linalg.norm(np.mul(X,w)+one_vec*b-y),2)
+        res = (1/m) * np.power(np.linalg.norm(np.dot(X, w) +
+                                              (np.multiply(one_vec, b))-y),2)
 
         return res
 
@@ -72,10 +73,10 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
         g_b = 0.0
         m = X.shape[0]
         one_vec = np.ones(m)
-        inner = np.multiply(X,w)+np.multiply(one_vec,b)-y
-        g_w = 2/m*inner.dot(X)
-        b_inner = np.multiply(X,w)+np.multiply(one_vec,b)-y
-        g_b = 2/m* np.multiply(one_vec.reshape(-1,1),b_inner)
+        inner = np.dot(X,w) + np.multiply(one_vec, b) - y
+        g_w = (2/m) * (np.dot(np.transpose(X) ,inner))
+        b_inner = np.dot(X ,w) + np.multiply(one_vec, b) - y
+        g_b = (2/m) * np.multiply(one_vec.reshape(-1,1), b_inner)
 
         return g_w, g_b
 
@@ -221,17 +222,6 @@ def compare_gradients(X, y, deltas, C=1, REPEATS=10, figsize=(10, 6)):
 
 
 if __name__ == '__main__':
-    # read the data set
-    df = pd.read_csv('virus_labeled.csv')
-    train, test = prepare_HW3.prepare_data(df)
-
-    train_subset , train_subset_test = train_test_split(train,train_size=0.8 , random_state= my_id+or_id)
-    X_train = train_subset.copy()
-    X_train.pop('VirusScore')
-    y_train = train_subset['VirusScore'].values
-    X_train = X_train.values
-    compare_gradients(X_train, y_train, deltas=np.logspace(-7, -2, 9))
-
-    #
+    pass
 
 
