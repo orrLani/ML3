@@ -91,8 +91,9 @@ def Q6(train):
     dummy = DummyRegressor()
     dummy.fit(X_train,y_train)
     scores = cross_validate(dummy,X_train,y_train, scoring="neg_mean_squared_error",cv =5 ,return_train_score=True)
-    train_score = np.mean(scores['train_score'])
-    test_score = np.mean(scores['test_score'])
+    train_score = np.abs(np.mean(scores['train_score']))
+    test_score = np.abs(np.mean(scores['test_score']))
+    print(train_score , test_score)
     return train_score , test_score
 
 
@@ -143,7 +144,12 @@ def get_best_alpha_and_graph(train,regressor, alpha_sampling =np.logspace(-5, 5,
 def Q7(train):
     return get_best_alpha_and_graph(train,Ridge,doprint=True)
 
-
+def Q8(train):
+    X_train, y_train = prepare_x_train_y_train(train)
+    best_alpha = get_best_alpha_and_graph(train,Ridge)
+    model = Ridge(alpha=best_alpha)
+    print(get_train_valid_mse(model, X_train, y_train))
+    # return get_train_valid_mse(model, X_train, y_train)
 
 def get_top_5_features_coef(train,model):
     X_train, y_train = prepare_x_train_y_train(train)
@@ -195,7 +201,10 @@ def Q12(train):
 
 # not a code question
 def Q13(train):
-    pass
+    X_train, y_train = prepare_x_train_y_train(train)
+    best_alpha = get_best_alpha_and_graph(train,Lasso)
+    model = Lasso(alpha=best_alpha)
+    print(get_train_valid_mse(model, X_train, y_train))
 
 # get best 5 features for lasso regressor
 def Q14(train):
@@ -217,10 +226,12 @@ if __name__ == '__main__':
     # Q4(train_data=train_data)
     # Q5(train_data)
     # Q6(train_data)
-    Q7(train_data)
+    # Q7(train_data)
+    # Q8(train_data)
     # Q9(train_data)
     # Q10(train_data)
     # Q11(train_data)
     # Q12(train_data)
+    Q13(train_data)
     # Q14(train_data)
     # Q15(train_data)
