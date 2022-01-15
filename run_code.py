@@ -162,11 +162,11 @@ def Q9(train):
         print(X_train.columns[i])
     pass
 
-def Q10(train):
-    pass
+
+def absolute_coef_plot(train, model):
     X_train, y_train = prepare_x_train_y_train(train)
-    best_train_alpha = get_best_alpha_and_graph(train,Ridge,alpha_sampling=np.logspace(-5, 1, 50))
-    new_reg = Ridge(best_train_alpha)
+    best_train_alpha = get_best_alpha_and_graph(train, model, alpha_sampling=np.logspace(-5, 1, 50))
+    new_reg = model(best_train_alpha)
     new_reg.fit(X_train, y_train)
 
     tmp_arr = abs(new_reg.coef_)
@@ -174,13 +174,38 @@ def Q10(train):
 
     plt.xlabel("index")
     plt.ylabel("absolute value")
-    plt.title("Feature absolute values")
+    plt.title("Feature absolute values -" + str(model.__name__))
     plt.plot(range(len(tmp_arr)), tmp_arr)
     plt.grid()
     plt.show()
 
+
+def Q10(train):
+    absolute_coef_plot(train,Ridge)
+
 def Q11(train):
     return get_best_alpha_and_graph(train, Lasso,title="Lasso Liner regression optimal strength", doprint=True)
+
+
+#not a code question (graph one)
+def Q12(train):
+    pass
+
+# not a code question
+def Q13(train):
+    pass
+
+# get best 5 features for lasso regressor
+def Q14(train):
+    X_train, y_train = prepare_x_train_y_train(train)
+    indexes =get_top_5_features_coef(train,Lasso)
+    for i in indexes[:5]:
+        print(X_train.columns[i])
+    pass
+
+
+def Q15(train):
+    absolute_coef_plot(train,Lasso)
 
 
 if __name__ == '__main__':
@@ -193,4 +218,7 @@ if __name__ == '__main__':
     # Q7(train_data)
     # Q9(train_data)
     # Q10(train_data)
-    Q11(train_data)
+    # Q11(train_data)
+    # Q12(train_data)
+    # Q14(train_data)
+    Q15(train_data)
