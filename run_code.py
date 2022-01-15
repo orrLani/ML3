@@ -97,9 +97,10 @@ def Q6(train):
 
 
 def get_train_valid_mse(model , X_train, y_train , split = 5):
+    # model.fit(X_train,y_train)
     scores = cross_validate(model, X_train, y_train, scoring="neg_mean_squared_error", cv=5, return_train_score=True)
-    train_score = np.mean(scores['train_score'])
-    test_score = np.mean(scores['test_score'])
+    train_score = np.abs(np.mean(scores['train_score']))
+    test_score = np.abs(np.mean(scores['test_score']))
     return train_score, test_score
 
 def dummyRegressor(train):
@@ -122,6 +123,7 @@ def get_best_alpha_and_graph(train,regressor, alpha_sampling =np.logspace(-5, 5,
         eval_train.append(etraining)
         eval_val.append(evalid)
     best_alpha = alpha_sampling[np.argmin(np.array(eval_val))]
+    # best_alpha = alpha_sampling[np.argmin(np.array(eval_train))]
     if doprint:
         plt.semilogx(alpha_sampling, eval_train)
         plt.semilogx(alpha_sampling, eval_val)
@@ -165,7 +167,7 @@ def Q9(train):
 
 def absolute_coef_plot(train, model):
     X_train, y_train = prepare_x_train_y_train(train)
-    best_train_alpha = get_best_alpha_and_graph(train, model, alpha_sampling=np.logspace(-5, 1, 50))
+    best_train_alpha = get_best_alpha_and_graph(train, model, alpha_sampling=np.logspace(-5, 5, 100))
     new_reg = model(best_train_alpha)
     new_reg.fit(X_train, y_train)
 
@@ -215,10 +217,10 @@ if __name__ == '__main__':
     # Q4(train_data=train_data)
     # Q5(train_data)
     # Q6(train_data)
-    # Q7(train_data)
+    Q7(train_data)
     # Q9(train_data)
     # Q10(train_data)
     # Q11(train_data)
     # Q12(train_data)
     # Q14(train_data)
-    Q15(train_data)
+    # Q15(train_data)
