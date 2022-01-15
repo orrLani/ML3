@@ -9,7 +9,7 @@ import numpy as np
 from models import compare_gradients ,test_lr
 from sklearn.model_selection import train_test_split , cross_validate
 from sklearn.dummy import DummyRegressor
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Ridge, Lasso
 itai_id = 3
 or_id = 0
 
@@ -108,49 +108,79 @@ def dummyRegressor(train):
     return get_train_valid_mse(DummyRegressor(),X_train,y_train)
 
 
-def Q7(train):
-
+def get_best_alpha_and_graph(train,regressor, alpha_sampling =np.logspace(-5, 5, 100)
+                             ,title = "Ridge Liner regression optimal strength",doprint = False):
     X_train, y_train = prepare_x_train_y_train(train)
 
-    dummy_train , dummy_val = dummyRegressor(train)
+    dummy_train, dummy_val = dummyRegressor(train)
     # scores = cross_validate(dummy, X_train, y_train, scoring="neg_mean_squared_error", cv=5, return_train_score=True)
     # train_score = np.mean(scores['train_score'])
     # test_score = np.mean(scores['test_score'])
-    alpha_sampling = np.logspace(-5,5,150)
     eval_train, eval_val = [], []
-    for alpha in np.logspace(-5,5,150):
-        etraining, evalid = get_train_valid_mse(Ridge(alpha=alpha), X_train, y_train, 5)
+    for alpha in alpha_sampling:
+        etraining, evalid = get_train_valid_mse(regressor(alpha=alpha), X_train, y_train)
         eval_train.append(etraining)
         eval_val.append(evalid)
-    plt.semilogx(np.logspace(-5,5,150), eval_train)
-    plt.semilogx(np.logspace(-5,5,150), eval_val)
-    plt.semilogx(np.logspace(-5,5,150), [dummy_val for _ in np.logspace(-5,5,150)])
-    plt.legend(["eval train", "eval val", "dummy"])
-    plt.xlabel("alpha")
-    plt.ylabel("error")
-    # plt.yscale('log')
-    plt.grid()
-    plt.show()
-    best_train_alpha = alpha_sampling[np.argmin(np.array(eval_train))]
-    print("best for train: error-", np.min(np.array(eval_train)), "alpha-", alpha_sampling[np.argmin(np.array(eval_train))])
-    print("best for validation: error-", np.min(np.array(eval_val)), "alpha-",
-          alpha_sampling[np.argmin(np.array(eval_val))])
-    return best_train_alpha
+    best_alpha = alpha_sampling[np.argmin(np.array(eval_val))]
+    if doprint:
+        plt.semilogx(alpha_sampling, eval_train)
+        plt.semilogx(alpha_sampling, eval_val)
+        plt.semilogx(alpha_sampling, [dummy_val for _ in alpha_sampling])
+        plt.legend(["eval train", "eval validation", "dummy"])
+        plt.xlabel("alpha")
+        plt.ylabel("error")
+        plt.title(title)
+        plt.grid()
+        plt.show()
+        print("best for train: error= ", np.min(np.array(eval_train)), "alpha= ",
+              alpha_sampling[np.argmin(np.array(eval_train))])
+        print("best for validation: error= ", np.min(np.array(eval_val)), "alpha= ",
+              alpha_sampling[np.argmin(np.array(eval_val))])
+    return best_alpha
+
+def Q7(train):
+    return get_best_alpha_and_graph(train,Ridge,doprint=True)
+
+
+
+def get_top_5_features_coef(train,model):
+    X_train, y_train = prepare_x_train_y_train(train)
+    best_train_alpha = get_best_alpha_and_graph(train,model)
+    new_reg = model(best_train_alpha)
+    new_reg.fit(X_train, y_train)
+
+    tmp_arr = np.abs(np.array(new_reg.coef_))
+    indexes = tmp_arr.argsort()[::-1]
+    features = indexes[:5]
+    return features
 
 
 def Q9(train):
     X_train, y_train = prepare_x_train_y_train(train)
-    best_train_alpha = Q7(train)
-    new_reg = Ridge(best_train_alpha)
-    new_reg.fit(X_train,y_train)
-
-    tmp_arr = np.abs(np.array(new_reg.coef_))
-    indexes = tmp_arr.argsort()[::-1]
+    indexes =get_top_5_features_coef(train,Ridge)
     for i in indexes[:5]:
         print(X_train.columns[i])
     pass
 
 def Q10(train):
+    pass
+    X_train, y_train = prepare_x_train_y_train(train)
+    best_train_alpha = get_best_alpha_and_graph(train,Ridge,alpha_sampling=np.logspace(-5, 1, 50))
+    new_reg = Ridge(best_train_alpha)
+    new_reg.fit(X_train, y_train)
+
+    tmp_arr = abs(new_reg.coef_)
+    tmp_arr = np.sort(tmp_arr)[::-1]
+
+    plt.xlabel("index")
+    plt.ylabel("absolute value")
+    plt.title("Feature absolute values")
+    plt.plot(range(len(tmp_arr)), tmp_arr)
+    plt.grid()
+    plt.show()
+
+def Q11(train):
+    return get_best_alpha_and_graph(train, Lasso,title="Lasso Liner regression optimal strength", doprint=True)
 
 
 if __name__ == '__main__':
@@ -161,4 +191,6 @@ if __name__ == '__main__':
     # Q5(train_data)
     # Q6(train_data)
     # Q7(train_data)
-    Q9(train_data)
+    # Q9(train_data)
+    # Q10(train_data)
+    Q11(train_data)
