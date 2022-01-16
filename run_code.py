@@ -10,6 +10,7 @@ from models import compare_gradients ,test_lr
 from sklearn.model_selection import train_test_split , cross_validate
 from sklearn.dummy import DummyRegressor
 from sklearn.linear_model import Ridge, Lasso
+from sklearn.preprocessing import PolynomialFeatures
 itai_id = 3
 or_id = 0
 
@@ -219,6 +220,37 @@ def Q15(train):
     absolute_coef_plot(train,Lasso)
 
 
+def Section6(train, test):
+    new_train = train.copy()
+    new_test = test.copy()
+    poly = PolynomialFeatures(degree=2,include_bias=False)
+    train_data = poly.fit_transform(new_train)
+    train_data = pd.DataFrame(train_data, columns=poly.get_feature_names_out(new_train.columns))
+    Q6(train_data)
+    Q7(train_data)
+    Q8(train_data)
+    Q9(train_data)
+    Q10(train_data)
+    Q11(train_data)
+    Q12(train_data)
+    Q13(train_data)
+    Q14(train_data)
+    Q15(train_data)
+
+def Q18(train):
+    new_train = train.copy()
+    poly = PolynomialFeatures(degree=2, include_bias=False)
+
+    new_t = new_train.drop(columns=["VirusScore"])
+    train_data = poly.fit_transform(new_t)
+    train_data = pd.DataFrame(train_data, columns=poly.get_feature_names_out(new_t.columns))
+    # new_train.set_index(train_data.index)
+    train_data = train_data.merge(new_train)
+    Q7(train_data)
+    Q8(train_data)
+    Q9(train_data)
+    Q10(train_data)
+
 if __name__ == '__main__':
     data = pd.read_csv("virus_labeled.csv")
     train_data, test_data = prepare_data(data)
@@ -232,6 +264,8 @@ if __name__ == '__main__':
     # Q10(train_data)
     # Q11(train_data)
     # Q12(train_data)
-    Q13(train_data)
+    # Q13(train_data)
     # Q14(train_data)
     # Q15(train_data)
+    # Section6(train_data,test_data)
+    Q18(train_data)
