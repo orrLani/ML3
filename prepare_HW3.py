@@ -316,15 +316,15 @@ def normalize_data(train:pd.DataFrame,test : pd.DataFrame):
     train,test =normalize(trainset=train,testset=test, row='sugar_levels', process=preprocessing.StandardScaler())
     train,test =normalize(trainset=train,testset=test, row='sport_activity', process=preprocessing.MinMaxScaler())
 
-    train,test = normalize(trainset=train,testset=test, row='PCR_01', process=preprocessing.StandardScaler())
-    train,test = normalize(trainset=train,testset=test, row='PCR_02', process=preprocessing.StandardScaler())
+    train,test = normalize(trainset=train,testset=test, row='PCR_01', process=preprocessing.MinMaxScaler())
+    train,test = normalize(trainset=train,testset=test, row='PCR_02', process=preprocessing.MinMaxScaler())
     train,test = normalize(trainset=train,testset=test, row='PCR_03', process=preprocessing.StandardScaler())
     train,test = normalize(trainset=train,testset=test, row='PCR_04', process=preprocessing.MinMaxScaler())
-    train,test = normalize(trainset=train,testset=test, row='PCR_06', process=preprocessing.StandardScaler())
-    train,test = normalize(trainset=train,testset=test, row='PCR_07', process=preprocessing.StandardScaler())
+    train,test = normalize(trainset=train,testset=test, row='PCR_06', process=preprocessing.MinMaxScaler())
+    train,test = normalize(trainset=train,testset=test, row='PCR_07', process=preprocessing.MinMaxScaler())
     train,test = normalize(trainset=train,testset=test, row='PCR_08',process=preprocessing.MinMaxScaler())
     train,test = normalize(trainset=train,testset=test, row='PCR_09',process=preprocessing.MinMaxScaler())
-    train,test = normalize(trainset=train,testset=test, row= 'PCR_10',process=preprocessing.StandardScaler())
+    train,test = normalize(trainset=train,testset=test, row= 'PCR_10',process=preprocessing.MinMaxScaler())
 
     return train,test
 
