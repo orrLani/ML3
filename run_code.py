@@ -33,7 +33,7 @@ def Q1(train_data):
 
 
 
-def Q2(train_data,test_data):
+def Q2(train_data,test_data = None):
     # REMOVE BloodType AND ADD NEW feature
     train_data['blood_viruse'] = np.where((train_data['blood_type_A-']==1) | (train_data['blood_type_A+']==1)  ,1 ,0)
     train_data = train_data.drop(['blood_type',
@@ -44,6 +44,7 @@ def Q2(train_data,test_data):
                 'blood_type_O-',
                 'blood_type_A+',
                 'blood_type_A-'],axis=1)
+    test_data['blood_viruse'] = np.where((test_data['blood_type_A-'] == 1) | (test_data['blood_type_A+'] == 1), 1, 0)
     test_data = test_data.drop(['blood_type',
                 'blood_type_AB-',
                 'blood_type_B+',
@@ -105,17 +106,19 @@ def get_train_valid_mse(model , X_train, y_train , split = 5):
     test_score = np.abs(np.mean(scores['test_score']))
     return train_score, test_score
 
-def dummyRegressor(train):
-    X_train, y_train = prepare_x_train_y_train(train)
+def dummyRegressor(X_train, y_train):
+    # X_train, y_train = prepare_x_train_y_train(train)
 
     return get_train_valid_mse(DummyRegressor(),X_train,y_train)
 
 
-def get_best_alpha_and_graph(train,regressor, alpha_sampling =np.logspace(-5, 5, 100)
+def get_best_alpha_and_graph(train, regressor, y_train = None, alpha_sampling =np.logspace(-5, 5, 100)
                              ,title = "Ridge Liner regression optimal strength",doprint = False):
-    X_train, y_train = prepare_x_train_y_train(train)
-
-    dummy_train, dummy_val = dummyRegressor(train)
+    if y_train is None:
+        X_train, y_train = prepare_x_train_y_train(train)
+    else:
+        X_train = train
+    dummy_train, dummy_val = dummyRegressor(X_train,y_train)
     # scores = cross_validate(dummy, X_train, y_train, scoring="neg_mean_squared_error", cv=5, return_train_score=True)
     # train_score = np.mean(scores['train_score'])
     # test_score = np.mean(scores['test_score'])
@@ -145,6 +148,7 @@ def get_best_alpha_and_graph(train,regressor, alpha_sampling =np.logspace(-5, 5,
 def Q7(train):
     return get_best_alpha_and_graph(train,Ridge,doprint=True)
 
+# best ridge
 def Q8(train):
     X_train, y_train = prepare_x_train_y_train(train)
     best_alpha = get_best_alpha_and_graph(train,Ridge)
@@ -193,7 +197,7 @@ def Q10(train):
     absolute_coef_plot(train,Ridge)
 
 def Q11(train):
-    return get_best_alpha_and_graph(train, Lasso,title="Lasso Liner regression optimal strength", doprint=True)
+    best_alpha =  get_best_alpha_and_graph(train, Lasso,title="Lasso Liner regression optimal strength", doprint=True)
 
 
 #not a code question (graph one)
@@ -250,6 +254,43 @@ def Q18(train):
     Q8(train_data)
     Q9(train_data)
     Q10(train_data)
+    return train_data
+
+
+
+from sklearn.metrics import mean_squared_error
+
+def Q20_preparation(train_data,test_data):
+    X_train = train_data.copy()
+    X_train.pop('VirusScore')
+    y_train = train_data['VirusScore'].values
+
+    dummy_model = DummyRegressor(strategy='mean')
+    dummy_model = dummy_model.fit(X_train,y_train)
+    ridge_model = Ridge(get_best_alpha_and_graph(X_train,Ridge,y_train=y_train)).fit(X_train,y_train)
+    lasso_model = Lasso(get_best_alpha_and_graph(X_train,Lasso,y_train=y_train)).fit(X_train,y_train)
+    #prepare poly data
+    poly = PolynomialFeatures(degree=2, include_bias=False)
+    train_data = poly.fit_transform(X_train)
+    polynominal_data = pd.DataFrame(train_data, columns=poly.get_feature_names_out(X_train.columns))
+
+    polynomial_ridge_model = Ridge(get_best_alpha_and_graph(polynominal_data,Ridge,y_train=y_train)).fit(polynominal_data,y_train)
+
+    X_test = test_data.copy()
+    X_test.pop('VirusScore')
+    y_test = test_data['VirusScore'].values
+    train_data = poly.fit_transform(X_test)
+    polynominal_test_data = pd.DataFrame(train_data, columns=poly.get_feature_names_out(X_test.columns))
+
+    dummy_res = dummy_model.predict(X_test)
+    ridge_res = ridge_model.predict(X_test)
+    lasso_res = lasso_model.predict(X_test)
+    polynomial_ridge_res = polynomial_ridge_model.predict(polynominal_test_data)
+    print("dummy mse " , mean_squared_error(y_test,dummy_res))
+    print("ridge mse ", mean_squared_error(y_test, ridge_res))
+    print("lasso mse ", mean_squared_error(y_test, lasso_res))
+    print("polynomial ridge mse ", mean_squared_error(y_test, polynomial_ridge_res))
+    pass
 
 if __name__ == '__main__':
     data = pd.read_csv("virus_labeled.csv")
@@ -268,4 +309,5 @@ if __name__ == '__main__':
     # Q14(train_data)
     # Q15(train_data)
     # Section6(train_data,test_data)
-    Q18(train_data)
+    # Q18(train_data)
+    Q20_preparation(train_data,test_data)
