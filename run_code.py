@@ -229,7 +229,7 @@ def Section6(train, test):
     new_test = test.copy()
     poly = PolynomialFeatures(degree=2,include_bias=False)
     train_data = poly.fit_transform(new_train)
-    train_data = pd.DataFrame(train_data, columns=poly.get_feature_names_out(new_train.columns))
+    train_data = pd.DataFrame(train_data, columns=poly.get_feature_names(new_train.columns))
     Q6(train_data)
     Q7(train_data)
     Q8(train_data)
@@ -247,7 +247,7 @@ def Q18(train):
 
     new_t = new_train.drop(columns=["VirusScore"])
     train_data = poly.fit_transform(new_t)
-    train_data = pd.DataFrame(train_data, columns=poly.get_feature_names_out(new_t.columns))
+    train_data = pd.DataFrame(train_data, columns=poly.get_feature_names(new_t.columns))
     # new_train.set_index(train_data.index)
     train_data = train_data.merge(new_train)
     Q7(train_data)
@@ -272,7 +272,7 @@ def Q20_preparation(train_data,test_data):
     #prepare poly data
     poly = PolynomialFeatures(degree=2, include_bias=False)
     train_data = poly.fit_transform(X_train)
-    polynominal_data = pd.DataFrame(train_data, columns=poly.get_feature_names_out(X_train.columns))
+    polynominal_data = pd.DataFrame(train_data, columns=poly.get_feature_names(X_train.columns))
 
     polynomial_ridge_model = Ridge(get_best_alpha_and_graph(polynominal_data,Ridge,y_train=y_train)).fit(polynominal_data,y_train)
 
@@ -280,7 +280,7 @@ def Q20_preparation(train_data,test_data):
     X_test.pop('VirusScore')
     y_test = test_data['VirusScore'].values
     train_data = poly.fit_transform(X_test)
-    polynominal_test_data = pd.DataFrame(train_data, columns=poly.get_feature_names_out(X_test.columns))
+    polynominal_test_data = pd.DataFrame(train_data, columns=poly.get_feature_names(X_test.columns))
 
     dummy_res = dummy_model.predict(X_test)
     ridge_res = ridge_model.predict(X_test)
