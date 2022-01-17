@@ -22,7 +22,7 @@ my_id = 3
 or_id = 0
 i = 1
 IS_TRAINING = False
-MAX_MIN_TRAINING = dict()
+Q_1_Q_3_TRAINING = dict()
 MEAN_MEDIAN_TRAINING = dict()
 MOST_FR = dict()
 
@@ -54,24 +54,26 @@ def percent75(df):
     return df.quantile(0.75)
 
 
-#
+
 # returns the dataframe after cleaning the column (can work with given bounds)
-def CleanIQR(data,col, upper_bound = None ,lower_bound=None): # need to add temp df (to not ruin data when addressing 1 value in colum )
+def CleanIQR(data,col, is_training): # need to add temp df (to not ruin data when addressing 1 value in colum )
+    global Q_1_Q_3_TRAINING
     tmp_data = data.copy()
-    q1 = percent25(tmp_data[col])
-    q3 = percent75(tmp_data[col])
+    if is_training:
+        q1 = percent25(tmp_data[col])
+        q3 = percent75(tmp_data[col])
+        Q_1_Q_3_TRAINING['q1'] = q1
+        Q_1_Q_3_TRAINING['q3'] = q3
+
+    else:
+        q1 = Q_1_Q_3_TRAINING['q1']
+        q3 = Q_1_Q_3_TRAINING['q3']
+
+
     iqr = q3 - q1
-    if upper_bound is None:
-        upper_bound = q3 + 1.5*iqr
-    if lower_bound is None:
-        lower_bound = q1 - 1.5*iqr
+    upper_bound = q3 + 1.5*iqr
+    lower_bound = q1 - 1.5*iqr
 
-    global IS_TRAINING
-    global MAX_MIN_TRAINING
-
-    if not IS_TRAINING:
-        upper_bound = MAX_MIN_TRAINING[col]['max']
-        lower_bound = MAX_MIN_TRAINING[col]['min']
 
     tmp_data[col] = np.where(
         tmp_data[col] > upper_bound, upper_bound,
@@ -80,13 +82,13 @@ def CleanIQR(data,col, upper_bound = None ,lower_bound=None): # need to add temp
     return tmp_data
 
 # cleans data according to 2 columns
-def DuoCleanIQR(data,col,feature,):
+def DuoCleanIQR(data,col,feature,is_training):
     features = data[feature].unique()
     for i in features:
         tmp_data = data.copy()
         # tmp_data = tmp_data[tmp_data.col == i]
         tmp_data = tmp_data[tmp_data[feature] == i]
-        tmp_data = CleanIQR(tmp_data, col)
+        tmp_data = CleanIQR(tmp_data, col,is_training)
         # pd.concat([data,tmp_data]).drop_duplicates()
         data.update(tmp_data)
     return data
@@ -157,21 +159,21 @@ def clear_outliers(data, is_training):
     continuous_cols = ['PCR_01', 'PCR_02', 'PCR_03', 'PCR_04', 'PCR_05',
                        'PCR_06', 'PCR_07', 'PCR_08', 'PCR_09', 'PCR_10']
 
-    global IS_TRAINING
-    global MAX_MIN_TRAINING
-    if is_training:
-        IS_TRAINING = True
-        numric_data = data[continuous_cols + ['sugar_levels', 'sport_activity', 'weight', 'age']]
-        MAX_MIN_TRAINING = numric_data.apply(minMax)
-    else:
-        IS_TRAINING = False
+    # global IS_TRAINING
+    # global MAX_MIN_TRAINING
+    # if is_training:
+    #     IS_TRAINING = True
+    #     numric_data = data[continuous_cols + ['sugar_levels', 'sport_activity', 'weight', 'age']]
+    #     MAX_MIN_TRAINING = numric_data.apply(minMax)
+    # else:
+    #     IS_TRAINING = False
     # connection clear
-    data = DuoCleanIQR(data, 'sugar_levels', 'sport_activity')
-    data = DuoCleanIQR(data, 'weight', 'age')
+    data = DuoCleanIQR(data, 'sugar_levels', 'sport_activity',is_training)
+    data = DuoCleanIQR(data, 'weight', 'age',is_training)
 
     # continuous columns clear
     for col in continuous_cols:
-        data = CleanIQR(data, col)
+        data = CleanIQR(data, col,is_training)
 
     return data
 
