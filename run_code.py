@@ -30,7 +30,7 @@ def Q1(train_data):
          ax[i].set_title("Blood type contains " + cur_type)
          ax[i].legend(), ax[i].grid(alpha=0.5)
 
-
+    plt.show()
 
 
 def Q2(train_data,test_data = None):
@@ -77,12 +77,14 @@ def Q5(train):
     X_val = X_val.values
     y_val = train_subset_test['VirusScore'].values
     test_lr(X_train.values, y_train, X_val, y_val)
+    plt.show()
 
 def prepare_x_train_y_train(train):
-    train_subset, train_subset_test = train_test_split(train, train_size=0.8, random_state=itai_id + or_id)
-    X_train = train_subset.copy()
+    # train_subset, train_subset_test = train_test_split(train, train_size=0.8, random_state=itai_id + or_id)
+
+    X_train = train.copy()
     X_train.pop('VirusScore')
-    y_train = train_subset['VirusScore'].values
+    y_train = train['VirusScore'].values
     X_train = X_train
     return X_train, y_train
 
@@ -295,6 +297,7 @@ def Q20_preparation(train_data,test_data):
 if __name__ == '__main__':
     data = pd.read_csv("virus_labeled.csv")
     train_data, test_data = prepare_data(data)
+    # Q1(train_data)
     train_data, test_data = Q2(train_data, test_data)
     # Q4(train_data=train_data)
     # Q5(train_data)
