@@ -320,6 +320,7 @@ def normalize_data(train:pd.DataFrame,test : pd.DataFrame):
     train,test = normalize(trainset=train,testset=test, row='PCR_02', process=preprocessing.MinMaxScaler())
     train,test = normalize(trainset=train,testset=test, row='PCR_03', process=preprocessing.StandardScaler())
     train,test = normalize(trainset=train,testset=test, row='PCR_04', process=preprocessing.MinMaxScaler())
+    train, test = normalize(trainset=train, testset=test, row='PCR_05', process=preprocessing.MinMaxScaler())
     train,test = normalize(trainset=train,testset=test, row='PCR_06', process=preprocessing.MinMaxScaler())
     train,test = normalize(trainset=train,testset=test, row='PCR_07', process=preprocessing.MinMaxScaler())
     train,test = normalize(trainset=train,testset=test, row='PCR_08',process=preprocessing.MinMaxScaler())
