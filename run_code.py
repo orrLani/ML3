@@ -82,8 +82,22 @@ def test_h_vs_poly(train,test):
     model_a_res = model_a.predict(X_test)
     model_b_res = model_b.predict(X_test)
 
-    print("dummy mse ", mean_squared_error(y_test, model_a_res))
-    print("dummy mse ", mean_squared_error(y_test, model_b_res))
+    print("model_a (contain A) mse ", mean_squared_error(y_test, model_a_res))
+    print("model_b (Not contain A) mse ", mean_squared_error(y_test, model_b_res))
+
+    X_train, y_train = prepare_x_train_y_train(train)
+    poly = PolynomialFeatures(degree=2, include_bias=False)
+    train_data = poly.fit_transform(X_train)
+    polynominal_data = pd.DataFrame(train_data, columns=poly.get_feature_names(X_train.columns))
+
+    polynomial_ridge_model = Ridge(get_best_alpha_and_graph(polynominal_data, Ridge, y_train=y_train)).fit(
+        polynominal_data, y_train)
+    train_data = poly.fit_transform(X_test)
+    polynominal_test_data = pd.DataFrame(train_data, columns=poly.get_feature_names(X_test.columns))
+
+    polynomial_ridge_res = polynomial_ridge_model.predict(polynominal_test_data)
+
+    print("polynomial ridge mse ", mean_squared_error(y_test, polynomial_ridge_res))
 
 def Q5(train):
     train_subset , train_subset_test = train_test_split(train,train_size=0.8 , random_state= itai_id+or_id)
@@ -389,7 +403,7 @@ if __name__ == '__main__':
     # Q14(train_data)
     # Q15(train_data)
     # Section6(train_data,test_data)
-    # Q18(train_data)
+    Q18(train_data)
     # Q20_preparation(train_data,test_data)
 
 
