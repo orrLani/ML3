@@ -65,6 +65,25 @@ def Q4(train_data):
     X_train = X_train.values
     compare_gradients(X_train, y_train, deltas=np.logspace(-7, -2, 9))
 
+def test_h_vs_poly(train,test):
+
+    train_a = train[ train['blood_viruse'] == 1]
+    train_b = train[train['blood_viruse'] == 0]
+
+    X_a , y_a = prepare_x_train_y_train(train_a)
+
+    X_b, y_b = prepare_x_train_y_train(train_b)
+
+    model_a = Ridge(get_best_alpha_and_graph(X_a,Ridge,y_train=y_a)).fit(X_a,y_a)
+    model_b = Ridge(get_best_alpha_and_graph(X_b,Ridge,y_train=y_b)).fit(X_b,y_b)
+
+    X_test , y_test = prepare_x_train_y_train(test)
+
+    model_a_res = model_a.predict(X_test)
+    model_b_res = model_b.predict(X_test)
+
+    print("dummy mse ", mean_squared_error(y_test, model_a_res))
+    print("dummy mse ", mean_squared_error(y_test, model_b_res))
 
 def Q5(train):
     train_subset , train_subset_test = train_test_split(train,train_size=0.8 , random_state= itai_id+or_id)
@@ -377,5 +396,6 @@ if __name__ == '__main__':
     # data_for_models =train_data.append([test_data])
     # prepare_csv(Ridge,data_for_models,4)
     # prepare_csv(Lasso,data_for_models,5)
-    prepare_poly_csv()
+    # prepare_poly_csv()
+    test_h_vs_poly(train_data, test_data)
     pass
