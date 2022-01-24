@@ -249,7 +249,7 @@ def impute_features(data,is_training):
 
 
 
-def features_to_keep(data):
+def features_to_keep(data, istest=False):
     remaining_features = [ 'age', 'sex', 'num_of_siblings','conversations_per_day','household_income',
                            'sugar_levels', 'sport_activity',  'PCR_01', 'PCR_02', 'PCR_03',
                           'PCR_04', 'PCR_05', 'PCR_06','PCR_07', 'PCR_08','PCR_09', 'PCR_10', 'blood_type',
@@ -257,7 +257,8 @@ def features_to_keep(data):
                            'blood_type_B-','blood_type_O+', 'blood_type_O-','cough','blood_type_A+','blood_type_A-',
                            'fever','shortness_of_breath', 'VirusScore'
                            ]
-
+    if istest and 'VirusScore' not in data.columns:
+        remaining_features.remove('VirusScore')
     data = data[remaining_features]
 
     return data
@@ -360,7 +361,7 @@ def _prepare_data(train_data: pd.DataFrame,test_data:pd.DataFrame):
 
     # Q23 clean feactures
     train_data = features_to_keep(data=train_data)
-    test_data = features_to_keep(data=test_data)
+    test_data = features_to_keep(data=test_data, istest=True)
     # data = questions_module.Q23(data=data,save_csv=False,name_csv ='data_clean')
 
     # data = normalize_data(data=data)
@@ -381,11 +382,14 @@ def imute_blood_type(train : pd.DataFrame, test : pd.DataFrame):
     return new_train, new_test
 
 
-def prepare_data( data : pd.DataFrame ):
+def prepare_data( data : pd.DataFrame , data_test : pd.DataFrame = None ):
     data = create_number_convention(data)
     # data = pd.read_csv("training.csv")
-
-    train_data, test_data = split_dataset(data)
+    if data_test is None:
+        train_data, test_data = split_dataset(data)
+    else:
+        test_data = create_number_convention(data_test)
+        train_data = data
     train,test = _prepare_data(train_data=train_data,test_data=test_data)
     train,test = normalize_data(train,test)
     # train = remove_unwanted_features(train)

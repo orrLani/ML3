@@ -43,7 +43,7 @@ def Q2(train_data,test_data = None):
                 'blood_type_O+',
                 'blood_type_O-',
                 'blood_type_A+',
-                'blood_type_A-'],axis=1 , errors='ignore')
+                'blood_type_A-', 'blood_type_AB+'],axis=1 , errors='ignore')
     test_data['blood_viruse'] = np.where((test_data['blood_type_AB-']==1)|(test_data['blood_type_A-'] == 1) | (test_data['blood_type_A+'] == 1), 1, 0)
     test_data = test_data.drop(['blood_type',
                 'blood_type_AB-',
@@ -52,7 +52,7 @@ def Q2(train_data,test_data = None):
                 'blood_type_O+',
                 'blood_type_O-',
                 'blood_type_A+',
-                'blood_type_A-'],axis=1, errors='ignore')
+                'blood_type_A-', 'blood_type_AB+'],axis=1, errors='ignore')
     return train_data,test_data
 
 
@@ -83,8 +83,10 @@ def prepare_x_train_y_train(train):
     # train_subset, train_subset_test = train_test_split(train, train_size=0.8, random_state=itai_id + or_id)
 
     X_train = train.copy()
-    X_train.pop('VirusScore')
-    y_train = train['VirusScore'].values
+    y_train = None
+    if 'VirusScore' in X_train.columns:
+        X_train.pop('VirusScore')
+        y_train = train['VirusScore'].values
     X_train = X_train
     return X_train, y_train
 
@@ -352,9 +354,44 @@ def prepare_poly_csv():
 
 
 
+def test_h_vs_poly(train,test):
+
+    train_a = train[ train['blood_viruse'] == 1]
+    train_b = train[train['blood_viruse'] == 0]
+
+    X_a , y_a = prepare_x_train_y_train(train_a)
+
+    X_b, y_b = prepare_x_train_y_train(train_b)
+
+    model_a = Ridge(get_best_alpha_and_graph(X_a,Ridge,y_train=y_a)).fit(X_a,y_a)
+    model_b = Ridge(get_best_alpha_and_graph(X_b,Ridge,y_train=y_b)).fit(X_b,y_b)
+
+    X_test , y_test = prepare_x_train_y_train(test)
+
+    model_a_res = model_a.predict(X_test)
+    model_b_res = model_b.predict(X_test)
+
+    print("dummy mse ", mean_squared_error(y_test, model_a_res))
+    print("dummy mse ", mean_squared_error(y_test, model_b_res))
+
+    X_train ,y_train = prepare_x_train_y_train(train)
+    poly = PolynomialFeatures(degree=2, include_bias=False)
+    train_data = poly.fit_transform(X_train)
+    polynominal_data = pd.DataFrame(train_data, columns=poly.get_feature_names(X_train.columns))
+
+    polynomial_ridge_model = Ridge(get_best_alpha_and_graph(polynominal_data, Ridge, y_train=y_train)).fit(
+        polynominal_data, y_train)
+    train_data = poly.fit_transform(X_test)
+    polynominal_test_data = pd.DataFrame(train_data, columns=poly.get_feature_names(X_test.columns))
+
+    polynomial_ridge_res = polynomial_ridge_model.predict(polynominal_test_data)
+
+    print("polynomial ridge mse ", mean_squared_error(y_test, polynomial_ridge_res))
+
 if __name__ == '__main__':
     data = pd.read_csv("virus_labeled.csv")
-    train_data, test_data = prepare_data(data)
+    unlabled = pd.read_csv("virus_unlabeled.csv")
+    train_data, test_data = prepare_data(data,unlabled)
     # Q1(train_data)
     train_data, test_data = Q2(train_data, test_data)
     # Q4(train_data=train_data)
@@ -377,5 +414,6 @@ if __name__ == '__main__':
     # data_for_models =train_data.append([test_data])
     # prepare_csv(Ridge,data_for_models,4)
     # prepare_csv(Lasso,data_for_models,5)
-    prepare_poly_csv()
+    # prepare_poly_csv()
+    # test_h_vs_poly(train_data,test_data)
     pass
