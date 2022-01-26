@@ -14,9 +14,6 @@ from sklearn.preprocessing import PolynomialFeatures
 itai_id = 3
 or_id = 0
 
-
-
-
 def Q1(train_data):
     x_train = train_data.drop(columns=['VirusScore'])
     y_train = train_data['VirusScore']
@@ -170,7 +167,7 @@ def get_best_alpha_and_graph(train, regressor, y_train = None, alpha_sampling =n
         plt.semilogx(alpha_sampling, eval_train)
         plt.semilogx(alpha_sampling, eval_val)
         plt.semilogx(alpha_sampling, [dummy_val for _ in alpha_sampling])
-        plt.legend(["eval train", "eval validation", "dummy"])
+        plt.legend(["mse train", "mse validation", "dummy"])
         plt.xlabel("alpha")
         plt.ylabel("error")
         plt.title(title)
@@ -260,23 +257,8 @@ def Q14(train):
 def Q15(train):
     absolute_coef_plot(train,Lasso)
 
-
-def Section6(train, test):
-    new_train = train.copy()
-    new_test = test.copy()
-    poly = PolynomialFeatures(degree=2,include_bias=False)
-    train_data = poly.fit_transform(new_train)
-    train_data = pd.DataFrame(train_data, columns=poly.get_feature_names(new_train.columns))
-    Q6(train_data)
-    Q7(train_data)
-    Q8(train_data)
-    Q9(train_data)
-    Q10(train_data)
-    Q11(train_data)
-    Q12(train_data)
-    Q13(train_data)
-    Q14(train_data)
-    Q15(train_data)
+def Q17(train,test):
+    test_h_vs_poly(train,test)
 
 def Q18(train):
     new_train = train.copy()
@@ -288,16 +270,31 @@ def Q18(train):
     # new_train.set_index(train_data.index)
     train_data = train_data.merge(new_train)
     Q7(train_data, Title="Ridge polynomial regression optimal strength")
-    Q8(train_data)
-    Q9(train_data)
-    Q10(train_data)
+    # Q8(train_data)
+    # Q9(train_data)
+    # Q10(train_data)
     return train_data
 
 
 
 from sklearn.metrics import mean_squared_error
 
-def Q20_preparation(train_data,test_data):
+def Q19(train):
+    new_train = train.copy()
+    poly = PolynomialFeatures(degree=2, include_bias=False)
+
+    new_t = new_train.drop(columns=["VirusScore"])
+    train_data = poly.fit_transform(new_t)
+    train_data = pd.DataFrame(train_data, columns=poly.get_feature_names(new_t.columns))
+    # new_train.set_index(train_data.index)
+    train_data = train_data.merge(new_train)
+    # Q7(train_data, Title="Ridge polynomial regression optimal strength")
+    Q8(train_data)
+    # Q9(train_data)
+    # Q10(train_data)
+    return train_data
+
+def Q20(train_data,test_data):
     X_train = train_data.copy()
     X_train.pop('VirusScore')
     y_train = train_data['VirusScore'].values
@@ -330,30 +327,34 @@ def Q20_preparation(train_data,test_data):
     pass
 
 
-def prepare_csv(model,data_for_models,name ):
-    unlabled_data = pd.read_csv("virus_unlabeled.csv")
+def prepare_csv(model,name ):
+    data = pd.read_csv("virus_labeled.csv")
+    unlabled = pd.read_csv("virus_unlabeled.csv")
+    train_data, test_data = prepare_data(data,unlabled)
+    # Q1(train_data)
+    train_data, test_data = Q2(train_data, test_data)
+    # unlabled_data = pd.read_csv("virus_unlabeled.csv")
+    #
+    # unlabled_data['VirusScore'] = 99
+    final_res = pd.DataFrame(unlabled['patient_id'])
+    # unlabled_train, unlabled_test = prepare_data(unlabled_data)
+    # unlabled_train, unlabled_test = Q2(unlabled_train, unlabled_test)
+    # unlabled_data = unlabled_train.append([unlabled_test])
 
-    unlabled_data['VirusScore'] = 99
-    final_res = pd.DataFrame(unlabled_data['patient_id'])
-    unlabled_train, unlabled_test = prepare_data(unlabled_data)
-    unlabled_train, unlabled_test = Q2(unlabled_train, unlabled_test)
-    unlabled_data = unlabled_train.append([unlabled_test])
-
-    reg = model(get_best_alpha_and_graph(data_for_models, model))
-    labled_X, labled_y = prepare_x_train_y_train(data_for_models)
+    reg = model(get_best_alpha_and_graph(train_data, model))
+    labled_X, labled_y = prepare_x_train_y_train(train_data)
 
     reg.fit(labled_X, labled_y)
-    unlabled_X, unlabled_y = prepare_x_train_y_train(unlabled_data)
+    unlabled_X, unlabled_y = prepare_x_train_y_train(test_data)
     res = reg.predict(unlabled_X)
     final_res['VirusScore'] = res
     final_res.to_csv("pred_"+str(name)+".csv",index=False)
 
 def prepare_poly_csv():
     data = pd.read_csv("virus_labeled.csv")
-    train_data, train_data2 = prepare_data(data)
-    train_data, train_data2 = Q2(train_data, train_data2)
-
-    train_data = train_data.append([train_data2])
+    unlabled_data = pd.read_csv("virus_unlabeled.csv")
+    train_data, test_data = prepare_data(data,unlabled_data)
+    train_data, test_data = Q2(train_data, test_data)
 
     labled_X , labled_y = prepare_x_train_y_train(train_data)
     # prepare poly data
@@ -366,65 +367,24 @@ def prepare_poly_csv():
     polynomial_ridge_model = Ridge(get_best_alpha_and_graph(polynominal_data, Ridge, y_train=labled_y)).fit(
         polynominal_data, labled_y)
     # preparation of unlabled.csv
-    unlabled_data = pd.read_csv("virus_unlabeled.csv")
 
-    unlabled_data['VirusScore'] = 99
-    final_res = pd.DataFrame(unlabled_data['patient_id'])
-    unlabled_train, unlabled_test = prepare_data(unlabled_data)
-    unlabled_train, unlabled_test = Q2(unlabled_train, unlabled_test)
-    unlabled_data = unlabled_train.append([unlabled_test])
-
-    unlabled_X, unlabled_y = prepare_x_train_y_train(unlabled_data)
+    unlabled_X, unlabled_y = prepare_x_train_y_train(test_data)
 
     train_data = poly.fit_transform(unlabled_X)
     polynominal_test_data = pd.DataFrame(train_data, columns=poly.get_feature_names(unlabled_X.columns))
 
     res = polynomial_ridge_model.predict(polynominal_test_data)
-
+    final_res = pd.DataFrame(unlabled_data['patient_id'])
     final_res['VirusScore'] = res
     final_res.to_csv("pred_" + str(6) + ".csv", index=False)
 
 
 
-
-def test_h_vs_poly(train,test):
-
-    train_a = train[ train['blood_viruse'] == 1]
-    train_b = train[train['blood_viruse'] == 0]
-
-    X_a , y_a = prepare_x_train_y_train(train_a)
-
-    X_b, y_b = prepare_x_train_y_train(train_b)
-
-    model_a = Ridge(get_best_alpha_and_graph(X_a,Ridge,y_train=y_a)).fit(X_a,y_a)
-    model_b = Ridge(get_best_alpha_and_graph(X_b,Ridge,y_train=y_b)).fit(X_b,y_b)
-
-    X_test , y_test = prepare_x_train_y_train(test)
-
-    model_a_res = model_a.predict(X_test)
-    model_b_res = model_b.predict(X_test)
-
-    print("dummy mse ", mean_squared_error(y_test, model_a_res))
-    print("dummy mse ", mean_squared_error(y_test, model_b_res))
-
-    X_train ,y_train = prepare_x_train_y_train(train)
-    poly = PolynomialFeatures(degree=2, include_bias=False)
-    train_data = poly.fit_transform(X_train)
-    polynominal_data = pd.DataFrame(train_data, columns=poly.get_feature_names(X_train.columns))
-
-    polynomial_ridge_model = Ridge(get_best_alpha_and_graph(polynominal_data, Ridge, y_train=y_train)).fit(
-        polynominal_data, y_train)
-    train_data = poly.fit_transform(X_test)
-    polynominal_test_data = pd.DataFrame(train_data, columns=poly.get_feature_names(X_test.columns))
-
-    polynomial_ridge_res = polynomial_ridge_model.predict(polynominal_test_data)
-
-    print("polynomial ridge mse ", mean_squared_error(y_test, polynomial_ridge_res))
-
 if __name__ == '__main__':
     data = pd.read_csv("virus_labeled.csv")
-    unlabled = pd.read_csv("virus_unlabeled.csv")
-    train_data, test_data = prepare_data(data,unlabled)
+    # unlabled = pd.read_csv("virus_unlabeled.csv")
+    train_data, test_data = prepare_data(data)
+
     # Q1(train_data)
     train_data, test_data = Q2(train_data, test_data)
     # Q4(train_data=train_data)
@@ -439,15 +399,22 @@ if __name__ == '__main__':
     # Q13(train_data)
     # Q14(train_data)
     # Q15(train_data)
-    # Section6(train_data,test_data)
-    Q18(train_data)
-    # Q20_preparation(train_data,test_data)
+    # Q17(train_data,test_data)
+    # Q18(train_data)
+    #Q19(train_data)
+    # Q20(train_data, test_data)
+    prepare_csv(Ridge,4)
+    prepare_csv(Lasso,5)
+    prepare_poly_csv()
+
+    # data = pd.read_csv("virus_labeled.csv")
+    #unlabled = pd.read_csv("virus_unlabeled.csv")
+    #train_data, test_data = prepare_data(data, unlabled)
+
 
 
     # data_for_models =train_data.append([test_data])
-    # prepare_csv(Ridge,data_for_models,4)
-    # prepare_csv(Lasso,data_for_models,5)
-    # prepare_poly_csv()
+
     # test_h_vs_poly(train_data,test_data)
-    pass
+
 

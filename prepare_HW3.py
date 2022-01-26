@@ -7,8 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.impute import SimpleImputer
 from sklearn import preprocessing
-# ask if we can use that
-import math
+
 
 
 ##
