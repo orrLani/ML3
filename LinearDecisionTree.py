@@ -80,6 +80,7 @@ from sklearn.ensemble import RandomForestRegressor
 
 from sklearn.metrics import mean_squared_error
 from sklearn.neural_network import MLPRegressor
+from sklearn.preprocessing import PolynomialFeatures
 if __name__ == "__main__":
     # X, Y = [], []
     # X, Y = function_plot(X, Y, lambda x: -x**2,     -1, (0, 0), 0.3, -1, 2, 60)
@@ -125,6 +126,14 @@ if __name__ == "__main__":
     best_mse = 10000
     best_i = None
     best_j = None
+
+    poly = PolynomialFeatures(degree=2, include_bias=False)
+    train_data = poly.fit_transform(X)
+    polynominal_data = pd.DataFrame(train_data, columns=poly.get_feature_names(X.columns))
+
+    tmp = poly.fit_transform(Xtest)
+    polynominal_test_data = pd.DataFrame(tmp, columns=poly.get_feature_names(Xtest.columns))
+
     # for i in range(50,150):
     #     for j in range(2,5):
     #         regr = RandomForestRegressor(n_estimators=i,min_samples_split=j)
@@ -137,20 +146,61 @@ if __name__ == "__main__":
     #         # print("mse for i and j regressor : ", mean_squared_error(Ytest, res))
     # print("best is mse " +str(best_mse)+" best i,j " +str(best_i)+"  "+str(best_j))
 
-
+    best_layer = None
+    best_model = None
+    best_mse = 100000
+    # for model in {'relu','logistic','identity','tanh'}:
+    #     for layers in {(9,11,7,3),(9),(100,25,7,3),(8,4),(100,75,24,11,3),(150,91,33,23,13)
+    #         ,(300,150,33,23,13), (21,14),(21,14,7),(21,14,7),(21,19,17,13,11,7,5,3)}:
+    #
+    #         neural_regressor = MLPRegressor(hidden_layer_sizes=layers,activation=model,learning_rate='constant',learning_rate_init=0.0001)
+    #         neural_regressor.fit(X,Y)
+    #         if mean_squared_error(Ytest, neural_regressor.predict(Xtest)) < best_mse:
+    #             best_mse = mean_squared_error(Ytest, neural_regressor.predict(Xtest))
+    #             best_layer = layers
+    #             best_model = model
+    #         print(f"for {model} and layers {layers} the score is {mean_squared_error(Ytest, neural_regressor.predict(Xtest))}")
+    #
     for model in {'relu','logistic','identity','tanh'}:
-        for layers in {(9,11,7,3),(9),(100,25,7,3),(8,4),(100,75,24,11,3),(150,91,33,23,13),(300,150,33,23,13)}:
+        print("next model")
+        for i in range(1,1000,50):
+            print("next batch")
+            for j in range(1,1000,50):
+                layers = (j,i)
+                neural_regressor = MLPRegressor(hidden_layer_sizes=layers,activation=model,learning_rate='constant',learning_rate_init=0.0001)
+                neural_regressor.fit(X,Y)
+                if mean_squared_error(Ytest, neural_regressor.predict(Xtest)) < best_mse:
+                    best_mse = mean_squared_error(Ytest, neural_regressor.predict(Xtest))
+                    best_layer = layers
+                    best_model = model
+                # print(f"for {model} and layers {layers} the score is {mean_squared_error(Ytest, neural_regressor.predict(Xtest))}")
 
-            neural_regressor = MLPRegressor(hidden_layer_sizes=layers,activation=model,learning_rate='constant',learning_rate_init=0.0001)
-            neural_regressor.fit(X,Y)
-            print(f"for {model} and layers {layers} the score is {mean_squared_error(Ytest, neural_regressor.predict(Xtest))}")
 
+    best_mse_poly = 100000
+    best_layer_poly = None
+    best_model_poly = None
+    for model in {'relu', 'logistic', 'identity', 'tanh'}:
+        print("next model")
+        for i in range(1, 1000, 50):
+            print("next batch")
+            for j in range(1, i+1, 50):
+                for k in range(1, j + 1, 50):
 
+                    layers = (i,j,k)
+                    neural_regressor = MLPRegressor(hidden_layer_sizes=layers, activation=model, learning_rate='constant',
+                                                    learning_rate_init=0.0001)
+                    neural_regressor.fit(polynominal_data, Y)
+                    if mean_squared_error(Ytest, neural_regressor.predict(polynominal_test_data)) < best_mse:
+                        best_mse_poly = mean_squared_error(Ytest, neural_regressor.predict(polynominal_test_data))
+                        best_layer_poly = layers
+                        best_model_poly = model
+                # print(
+                #     f"POLY model = {model} ,layers= {layers} ,mse= {mean_squared_error(Ytest, neural_regressor.predict(polynominal_test_data))}")
 
-
-
-
-
+    # i have 1 output and 21 input
+    # less than 42 neurons
+    print(f"normal features = best is {best_model} {best_mse} {best_layer}")
+    print(f"poly features = best is {best_model_poly} {best_mse_poly} {best_layer_poly}")
 
     # models = LinearDecisionTree(800, 1)
     # models.fit(X, Y)
