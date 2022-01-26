@@ -43,9 +43,10 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
 
         # TODO: complete the loss calculation
         loss = None
-        m = len(y)
+        m = X.shape[0]
         one_vec = np.ones(m)
-        res = (1/m)*np.pow(np.linalg.norm(np.mul(X,w)+one_vec*b-y),2)
+        res = (1/m)*np.power(np.linalg.norm(X.dot(w)+one_vec*b-y),2)
+
 
         return res
 
@@ -63,14 +64,13 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
         # TODO: calculate the analytical gradient w.r.t w and b
         g_w = None
         g_b = 0.0
-        margins = (X.dot(w) + b).reshape(-1, 1)
-        hinge_inputs = np.multiply(margins, y.reshape(-1, 1))
-        m = len(y)
+        m = X.shape[0]
         one_vec = np.ones(m)
-        inner = np.multiply(X,w)+np.multiply(one_vec,b)-y
+        # inner = np.multiply(X,w) + np.multiply(one_vec,b) - y
+        inner = X.dot(w) + np.multiply(one_vec,b) - y
         g_w = 2/m*inner.dot(X)
-        b_inner = np.multiply(X,w)+np.multiply(one_vec,b)-y
-        g_b = 2/m* np.multiply(one_vec.reshape(-1,1),b_inner)
+        b_inner = X.dot(w)+np.multiply(one_vec,b)-y
+        g_b = 2/m* b_inner.dot(one_vec)
 
         return g_w, g_b
 
