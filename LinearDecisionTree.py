@@ -3,6 +3,8 @@ import numpy as np
 # from paintings import *
 # from auxiliary_functions import plot_2d_predictions_borders_for_trained_clf
 from collections import Counter
+from catboost import CatBoostRegressor
+
 
 class Node:
     def __init__(self, clf, l=None, r=None):
@@ -136,10 +138,12 @@ if __name__ == "__main__":
     best_mse_poly = 999999
     best_i_poly = None
     best_j_poly = None
-    for i in range(50,150):
-        for j in range(2,5):
-            regr = RandomForestRegressor(n_estimators=i,min_samples_split=j)
-            poly_reg = RandomForestRegressor(n_estimators=i,min_samples_split=j)
+    for i in range(1,70,7):
+        for j in range(2,3):
+            regr=CatBoostRegressor()
+            poly_reg = CatBoostRegressor()
+            # regr = RandomForestRegressor(n_estimators=139,max_depth=i)
+            # poly_reg = RandomForestRegressor(n_estimators=139,max_depth=i)
             poly_reg.fit(polynominal_data,Y)
             regr.fit(X, Y)
             res = regr.predict(Xtest)

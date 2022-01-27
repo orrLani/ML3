@@ -7,8 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.impute import SimpleImputer
 from sklearn import preprocessing
-# ask if we can use that
-import math
+
 
 
 ##
@@ -33,23 +32,24 @@ def minMax(x):
 def meanMedian(x):
     return pd.Series(index=['mean','median'],data=[x.mean(),x.median()])
 
-
+# turns given features into binary ones
+# for future processing
 def turn_binary(data):
     data['sex'] = data['sex'].replace(['F','M'],[0,1])
     data['risk'] = data['risk'].replace(['High','Low'],[1,0])
     data['spread'] = data['spread'].replace(['High', 'Low'],[1, 0])
     return data
 
-
+# fill empty values with nan for future processing
 def NoneFill(data,col):
     val = data[col].mean()
     data[col].fillna(value=val,inplace=True)
 
-
+# returns the 0 - 25% according to normal distribution
 def percent25(df):
     return df.quantile(0.25)
 
-
+# returns the 75%+ according to normal distribution
 def percent75(df):
     return df.quantile(0.75)
 
@@ -106,7 +106,7 @@ def get_histograms(data,feature):
     plt.tight_layout()
     plt.show()
 
-
+# splits the given dataset into test and train according to the sum of our ids
 def split_dataset(data):
     train, test = train_test_split(data, train_size=0.8, random_state=my_id + or_id)
     train.to_csv("train.csv")
@@ -154,7 +154,7 @@ def get_all_hist(data):
 
 
 
-
+# remove outliers
 def clear_outliers(data, is_training):
     continuous_cols = ['PCR_01', 'PCR_02', 'PCR_03', 'PCR_04', 'PCR_05',
                        'PCR_06', 'PCR_07', 'PCR_08', 'PCR_09', 'PCR_10']
@@ -186,6 +186,7 @@ def clear_outliers(data, is_training):
 # constant value (arbitrary value)
 # most frequent
 
+#fills missing blood_type information in a random manner (random_state = id sum)
 def imute_blood_type(train , test : pd.DataFrame):
     imputer = RandomSampleImputer(random_state=my_id + or_id)
     new_train = train.copy()
@@ -202,6 +203,8 @@ def impute_simpleimputer(data,feature, impute_method):
     return data
 
 
+#    impute features , works differently for training set and test set
+#   in test_data it uses metrics according to the training_data
 def impute_features(data,is_training):
     median_impute = ['happiness_score','age', 'num_of_siblings', 'conversations_per_day', 'sport_activity', 'PCR_05', 'PCR_10']
     mean_impute = ['household_income', 'sugar_levels', 'PCR_01', 'PCR_02', 'PCR_03', 'PCR_04', 'PCR_06', 'PCR_07', 'PCR_08', 'PCR_09']
@@ -248,7 +251,8 @@ def impute_features(data,is_training):
 
 
 
-
+# list of features to keep in the data,
+#
 def features_to_keep(data, istest=False):
     remaining_features = [ 'age', 'sex', 'num_of_siblings','conversations_per_day','household_income',
                            'sugar_levels', 'sport_activity',  'PCR_01', 'PCR_02', 'PCR_03',
@@ -263,6 +267,8 @@ def features_to_keep(data, istest=False):
 
     return data
 
+# prepares a function based on the weight/age data
+#
 def prepare_weight_age_function(data):
     ret_list = []
     for i in range (0,100):
@@ -271,6 +277,7 @@ def prepare_weight_age_function(data):
     return ret_list
 
 
+# removes a column added when we didnt tell it to not include index
 def remove_unwanted_features(data):
     toRemove = set()
     for i in data:
@@ -282,11 +289,16 @@ def remove_unwanted_features(data):
 
 
 #######################################
+# normalize the training_data and test_data
+# the test_data is normalize in accordance to the training_data
+# the normalization is based on the process sent ( for example , minmaxscalar)
 def normalize(trainset,testset,row,process):
     temp = trainset[row].values.reshape(-1, 1)
     trainset[row] = process.fit_transform(temp)
     testset[row] = process.transform(testset[row].values.reshape(-1,1))
     return trainset,testset
+
+
 
 def convertToNumber(s):
     return int.from_bytes(str(s).encode(), 'little')
@@ -308,7 +320,7 @@ def create_number_convention(df):
     # drop date
     return df
 
-
+# fucntion that sends the data to be normalized and based on what
 def normalize_data(train:pd.DataFrame,test : pd.DataFrame):
     train,test = normalize(trainset=train,testset=test, row='age', process=preprocessing.MinMaxScaler())
     train,test =normalize(trainset=train,testset=test, row='num_of_siblings', process=preprocessing.StandardScaler())
@@ -331,7 +343,8 @@ def normalize_data(train:pd.DataFrame,test : pd.DataFrame):
     return train,test
 
 
-
+# inner function for prepare , that calls other functions in order to normalize , make features
+# preprocessing of the data.
 def _prepare_data(train_data: pd.DataFrame,test_data:pd.DataFrame):
     """
     :param data:
@@ -372,7 +385,7 @@ def _prepare_data(train_data: pd.DataFrame,test_data:pd.DataFrame):
 
 
 
-
+# imutes blood type
 def imute_blood_type(train : pd.DataFrame, test : pd.DataFrame):
     imputer = RandomSampleImputer(random_state=my_id + or_id)
     new_train = train.copy()
@@ -381,7 +394,9 @@ def imute_blood_type(train : pd.DataFrame, test : pd.DataFrame):
     new_test['blood_type'] = imputer.transform(test[['blood_type']])
     return new_train, new_test
 
-
+# main function to preprocess the data
+# if 1 DataFrame is sent : splits it into train and test,
+# if 2 DataFrames are sent: first one becomes "train" the other one becomes test
 def prepare_data( data : pd.DataFrame , data_test : pd.DataFrame = None ):
     data = create_number_convention(data)
     # data = pd.read_csv("training.csv")
