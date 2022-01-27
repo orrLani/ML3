@@ -133,18 +133,30 @@ if __name__ == "__main__":
 
     tmp = poly.fit_transform(Xtest)
     polynominal_test_data = pd.DataFrame(tmp, columns=poly.get_feature_names(Xtest.columns))
+    best_mse_poly = 999999
+    best_i_poly = None
+    best_j_poly = None
+    for i in range(50,150):
+        for j in range(2,5):
+            regr = RandomForestRegressor(n_estimators=i,min_samples_split=j)
+            poly_reg = RandomForestRegressor(n_estimators=i,min_samples_split=j)
+            poly_reg.fit(polynominal_data,Y)
+            regr.fit(X, Y)
+            res = regr.predict(Xtest)
+            poly_res = poly_reg.predict(polynominal_test_data)
+            if mean_squared_error(Ytest, res) < best_mse:
+                best_mse = mean_squared_error(Ytest, res)
+                best_i = i
+                best_j = j
+            if mean_squared_error(Ytest, poly_res) < best_mse_poly:
+                best_mse_poly = mean_squared_error(Ytest, poly_res)
+                best_i_poly = i
+                best_j_poly = j
+            print(f"mse for {i} and {j} regressor : ", mean_squared_error(Ytest, res))
+            print(f"mse for {i} and {j} POLY regressor : ", mean_squared_error(Ytest, poly_res))
 
-    # for i in range(50,150):
-    #     for j in range(2,5):
-    #         regr = RandomForestRegressor(n_estimators=i,min_samples_split=j)
-    #         regr.fit(X, Y)
-    #         res = regr.predict(Xtest)
-    #         if mean_squared_error(Ytest, res) < best_mse:
-    #             best_mse = mean_squared_error(Ytest, res)
-    #             best_i = i
-    #             best_j = j
-    #         # print("mse for i and j regressor : ", mean_squared_error(Ytest, res))
-    # print("best is mse " +str(best_mse)+" best i,j " +str(best_i)+"  "+str(best_j))
+    print("best is mse " +str(best_mse)+" best i,j " +str(best_i)+"  "+str(best_j))
+    print("POLYPOLY best is mse " + str(best_mse_poly) + " best i,j " + str(best_i_poly) + "  " + str(best_j_poly))
 
     best_layer = None
     best_model = None
@@ -161,46 +173,47 @@ if __name__ == "__main__":
     #             best_model = model
     #         print(f"for {model} and layers {layers} the score is {mean_squared_error(Ytest, neural_regressor.predict(Xtest))}")
     #
-    for model in {'relu','logistic','identity','tanh'}:
-        print("next model")
-        for i in range(1,1000,50):
-            print("next batch")
-            for j in range(1,1000,50):
-                layers = (j,i)
-                neural_regressor = MLPRegressor(hidden_layer_sizes=layers,activation=model,learning_rate='constant',learning_rate_init=0.0001)
-                neural_regressor.fit(X,Y)
-                if mean_squared_error(Ytest, neural_regressor.predict(Xtest)) < best_mse:
-                    best_mse = mean_squared_error(Ytest, neural_regressor.predict(Xtest))
-                    best_layer = layers
-                    best_model = model
-                # print(f"for {model} and layers {layers} the score is {mean_squared_error(Ytest, neural_regressor.predict(Xtest))}")
+
+    # for model in {'relu','logistic','identity','tanh'}:
+    #     print("next model")
+    #     for i in range(1,1000,50):
+    #         print("next batch")
+    #         for j in range(1,1000,50):
+    #             layers = (j,i)
+    #             neural_regressor = MLPRegressor(hidden_layer_sizes=layers,activation=model,learning_rate='constant',learning_rate_init=0.0001)
+    #             neural_regressor.fit(X,Y)
+    #             if mean_squared_error(Ytest, neural_regressor.predict(Xtest)) < best_mse:
+    #                 best_mse = mean_squared_error(Ytest, neural_regressor.predict(Xtest))
+    #                 best_layer = layers
+    #                 best_model = model
+    #             # print(f"for {model} and layers {layers} the score is {mean_squared_error(Ytest, neural_regressor.predict(Xtest))}")
 
 
     best_mse_poly = 100000
     best_layer_poly = None
     best_model_poly = None
-    for model in {'relu', 'logistic', 'identity', 'tanh'}:
-        print("next model")
-        for i in range(1, 1000, 50):
-            print("next batch")
-            for j in range(1, i+1, 50):
-                for k in range(1, j + 1, 50):
-
-                    layers = (i,j,k)
-                    neural_regressor = MLPRegressor(hidden_layer_sizes=layers, activation=model, learning_rate='constant',
-                                                    learning_rate_init=0.0001)
-                    neural_regressor.fit(polynominal_data, Y)
-                    if mean_squared_error(Ytest, neural_regressor.predict(polynominal_test_data)) < best_mse:
-                        best_mse_poly = mean_squared_error(Ytest, neural_regressor.predict(polynominal_test_data))
-                        best_layer_poly = layers
-                        best_model_poly = model
+    # for model in {'relu', 'logistic', 'identity', 'tanh'}:
+    #     print("next model")
+    #     for i in range(750, 800, 50):
+    #         print("next batch")
+    #         for j in range(1, i+1, 65):
+    #             for k in range(1, j + 1, 65):
+    #
+    #                 layers = (i,j,k)
+    #                 neural_regressor = MLPRegressor(hidden_layer_sizes=layers, activation=model, learning_rate='constant',
+    #                                                 learning_rate_init=0.0001)
+    #                 neural_regressor.fit(polynominal_data, Y)
+    #                 if mean_squared_error(Ytest, neural_regressor.predict(polynominal_test_data)) < best_mse:
+    #                     best_mse_poly = mean_squared_error(Ytest, neural_regressor.predict(polynominal_test_data))
+    #                     best_layer_poly = layers
+    #                     best_model_poly = model
                 # print(
                 #     f"POLY model = {model} ,layers= {layers} ,mse= {mean_squared_error(Ytest, neural_regressor.predict(polynominal_test_data))}")
 
     # i have 1 output and 21 input
     # less than 42 neurons
-    print(f"normal features = best is {best_model} {best_mse} {best_layer}")
-    print(f"poly features = best is {best_model_poly} {best_mse_poly} {best_layer_poly}")
+    # print(f"normal features = best is {best_model} {best_mse} {best_layer}")
+    # print(f"poly features = best is {best_model_poly} {best_mse_poly} {best_layer_poly}")
 
     # models = LinearDecisionTree(800, 1)
     # models.fit(X, Y)
