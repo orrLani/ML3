@@ -150,7 +150,6 @@ def get_train_valid_mse(model , X_train, y_train , split = 5):
     test_score = np.abs(np.mean(scores['test_score']))
     return train_score, test_score
 
-
 # returns MSE for DummyRegressor
 def dummyRegressor(X_train, y_train):
     # X_train, y_train = prepare_x_train_y_train(train)
@@ -366,7 +365,6 @@ def prepare_csv(model,name ):
     res = reg.predict(unlabled_X)
     final_res['VirusScore'] = res
     final_res.to_csv("pred_"+str(name)+".csv",index=False)
-
 
 # prepares pred_8.csv
 #
